@@ -86,6 +86,26 @@ readonly class DiscogsCsvImport implements CsvImportInterface
             $platform = PlatformEnum::Discogs;
             ++$results['total'];
 
+            $requiredFields = ['title', 'artist', 'release_id'];
+            $missingRequiredValues = [];
+
+            foreach ($requiredFields as $field) {
+                $value = $collection[$field] ?? null;
+
+                if (null === $value || '' === trim((string) $value)) {
+                    $missingRequiredValues[] = $field;
+                }
+            }
+
+            if ([] !== $missingRequiredValues) {
+                $results['errors'][] = [
+                    'line'    => $index + 2,
+                    'message' => sprintf('Missing required value(s): %s.', implode(', ', $missingRequiredValues)),
+                ];
+
+                continue;
+            }
+
             try {
                 $albumUuid             = UuidV7::v7();
                 $externalReferenceUuid = UuidV7::v7();
@@ -113,8 +133,8 @@ readonly class DiscogsCsvImport implements CsvImportInterface
                     ownerUuid: $userUuid,
                     title: $albumDTO->title,
                     artist: $albumDTO->artist,
-                    releaseYear: $albumDTO->releaseYear,
                     format: $albumDTO->format,
+                    releaseYear: $albumDTO->releaseYear,
                     label: $albumDTO->label,
                 );
                 $this->albumWriter->save($album);
