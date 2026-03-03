@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/workflows/setup
+      - name: Run PhpStan
+        run: vendor/bin/phpstan analyse --memory-limit=256M
+      - name: Run php-cs-fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/workflows/setup
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit tests/Unit
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: find_music_test
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U app -d find_music_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgresql://app:app@127.0.0.1:5432/find_music_test?serverVersion=16&charset=utf8
+      RANDFILE: /tmp/.rnd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/workflows/setup
+      - name: Prepare test environment
+        run: |
+          mkdir -p config/jwt/test
+          php bin/console lexik:jwt:generate-keypair --env=test --skip-if-exists --no-interaction
+          php bin/console doctrine:database:create --if-not-exists --env=test --no-interaction
+          php bin/console doctrine:schema:create --env=test --no-interaction
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit tests/Integration
