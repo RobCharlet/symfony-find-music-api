@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+framework:
+    validation:
+        # Enables validator auto-mapping support.
+        # For instance, basic validation constraints will be inferred from Doctrine's metadata.
+        #auto_mapping:
+        #    App\Entity\: []
+        mapping                 :
+            paths:
+                - "%kernel.project_dir%/src/Collection/Infra/Resources/config/validation/"
+                - "%kernel.project_dir%/src/User/Infra/Resources/config/validation/"
+
+when@test:
+    framework:
+        validation:
+            not_compromised_password: false

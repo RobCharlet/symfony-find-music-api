@@ -1,0 +1,4 @@
+App\Collection\App\Query\FindAlbumsByOwnerQuery:
+    properties:
+        ownerUuid:
+            - NotNull: ~

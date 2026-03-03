@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                          https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\User\Infra\Security\SecurityUser" table="app_user">
+        <id name="uuid" column="uuid" type="uuid">
+            <generator strategy="NONE"/>
+        </id>
+        <field name="password" column="password" type="string" nullable="false"/>
+        <field name="roles" column="roles" type="json" nullable="false"/>
+        <field name="email" column="email" type="string" nullable="false" length="180"/>
+        <unique-constraints>
+            <unique-constraint columns="email" name="uq_email"/>
+        </unique-constraints>
+    </entity>
+</doctrine-mapping>

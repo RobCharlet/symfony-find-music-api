@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                          https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Collection\Domain\Album" table="album">
+        <id name="uuid" column="uuid" type="uuid">
+            <generator strategy="NONE"/>
+        </id>
+        <field name="ownerUuid" column="owner_uuid" type="uuid" nullable="false"/>
+        <field name="title" column="title" type="string" nullable="false"/>
+        <field name="artist" column="artist" type="string" nullable="false"/>
+        <field name="releaseYear" column="release_year" type="integer" nullable="true"/>
+        <field name="format" column="format" type="string" nullable="false"/>
+        <field name="genre" column="genre" type="string" nullable="true"/>
+        <field name="label" column="label" type="string" nullable="true"/>
+        <field name="coverUrl" column="cover_url" type="string" nullable="true"/>
+        <field name="createdAt" column="created_at" type="datetime_immutable" nullable="false"/>
+        <field name="updatedAt" column="updated_at" type="datetime_immutable" nullable="false"/>
+        <one-to-many field="externalReferences" target-entity="App\Collection\Domain\ExternalReference" mapped-by="album" />
+    </entity>
+</doctrine-mapping>

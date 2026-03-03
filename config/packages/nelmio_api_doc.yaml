@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+nelmio_api_doc:
+    documentation:
+        info      :
+            title      : Find Music
+            description: Manage your music library
+            version    : 1.0.0
+        components:
+            securitySchemes:
+                Bearer:
+                    type        : http
+                    scheme      : bearer
+                    bearerFormat: JWT
+            schemas:
+                ExternalReference:
+                    type: object
+                    properties:
+                        uuid:
+                            type: string
+                            format: uuid
+                        albumUuid:
+                            type: string
+                            format: uuid
+                        platform:
+                            type: string
+                        externalId:
+                            type: string
+                        metadata:
+                            type: object
+                            nullable: true
+                Album:
+                    type: object
+                    properties:
+                        uuid:
+                            type: string
+                            format: uuid
+                        title             :
+                            type: string
+                        artist            :
+                            type: string
+                        genre             :
+                            type: string
+                            nullable: true
+                        releaseYear       :
+                            type: integer
+                            nullable: true
+                        format:
+                            type: string
+                            nullable: true
+                        label:
+                            type: string
+                            nullable: true
+                        coverUrl:
+                            type    : string
+                            nullable: true
+                        createdAt         :
+                            type  : string
+                            format: date-time
+                        updatedAt         :
+                            type    : string
+                            format  : date-time
+                            nullable: true
+                        externalReferences:
+                            type : array
+                            items:
+                                $ref: '#/components/schemas/ExternalReference'
+                User:
+                    type: object
+                    properties:
+                        uuid:
+                            type: string
+                            format: uuid
+                        email:
+                            type: string
+                            format: email
+        tags:
+            - name: Auth
+            - name: Users
+            - name: Albums
+            - name: External References
+        paths:
+            /api/login_check:
+                post:
+                    tags: [Auth]
+                    summary: Get a JWT token
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    required: [email, password]
+                                    properties:
+                                        email:
+                                            type: string
+                                            format: email
+                                        password:
+                                            type: string
+                    responses:
+                        '200':
+                            description: JWT token
+                            content:
+                                application/json:
+                                    schema:
+                                        properties:
+                                            token:
+                                                type: string
+                        '401':
+                            description: Invalid credential
+
+
+    areas        :
+        path_patterns:
+            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc

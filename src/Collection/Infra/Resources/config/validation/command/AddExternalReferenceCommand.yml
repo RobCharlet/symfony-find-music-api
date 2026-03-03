@@ -1,0 +1,19 @@
+App\Collection\App\Command\AddExternalReferenceCommand:
+    properties:
+        uuid:
+            - NotNull: ~
+        albumUuid:
+            - NotBlank: ~
+            - Type:
+                type: string
+            - Uuid:
+                message: 'This value is not a valid UUID.'
+        platform:
+            - NotNull: ~
+            - Choice: { callback: [ App\Collection\Domain\PlatformEnum, values ] }
+        externalId:
+            - NotNull: ~
+            - Length:
+                max: 255
+        metadata:
+            - Type: array

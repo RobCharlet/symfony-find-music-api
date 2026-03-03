@@ -1,0 +1,16 @@
+App\User\App\Command\CreateUserCommand:
+    properties:
+        uuid:
+            - NotNull: ~
+        email:
+            - NotNull: ~
+            - Email:
+                message: The email "{{ value }}" is not a valid email.
+        password:
+            - NotBlank: ~
+            - Length:
+                min: 8
+                max: 180
+                minMessage: 'Password must be at least {{ limit }} characters long'
+        roles:
+            - Type: array

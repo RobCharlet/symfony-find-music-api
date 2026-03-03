@@ -1,0 +1,10 @@
+App\Collection\App\Query\FindCollectionQuery:
+    properties:
+        page:
+            - Type: integer
+            - GreaterThanOrEqual: 1
+        limit:
+            - Type: integer
+            - Range:
+                    min: 1
+                    max: 100

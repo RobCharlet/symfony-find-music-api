@@ -1,0 +1,4 @@
+App\Collection\App\Command\DeleteExternalReferenceCommand:
+    properties:
+        uuid:
+            - NotNull: ~

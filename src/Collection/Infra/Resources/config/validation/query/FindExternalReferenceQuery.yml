@@ -1,0 +1,4 @@
+App\Collection\App\Query\FindExternalReferenceQuery:
+    properties:
+        uuid:
+            - NotNull: ~

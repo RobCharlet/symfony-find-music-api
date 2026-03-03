@@ -1,0 +1,7 @@
+App\Collection\App\Command\ImportCsvCommand:
+    properties:
+        filePath:
+            - File:
+                maxSize         : "5M"
+                mimeTypes       : [ "text/csv", "text/plain" ]
+                mimeTypesMessage: "Invalid CSV file."

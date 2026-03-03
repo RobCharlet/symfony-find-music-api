@@ -1,0 +1,13 @@
+App\User\App\Command\UpdateUserCommand:
+    properties:
+        uuid:
+            - NotNull: ~
+        password:
+            - Length:
+                  max: 180
+        roles:
+            - Type: array
+        email:
+            - NotNull: ~
+            - Email:
+                  message: The email "{{ value }}" is not a valid email.

@@ -1,0 +1,4 @@
+App\User\App\Command\DeleteUserCommand:
+    properties:
+        uuid:
+            - NotNull: ~

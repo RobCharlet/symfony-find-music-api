@@ -1,0 +1,4 @@
+App\Collection\App\Query\FindExternalReferencesByAlbumQuery:
+    properties:
+        albumUuid:
+            - NotNull: ~

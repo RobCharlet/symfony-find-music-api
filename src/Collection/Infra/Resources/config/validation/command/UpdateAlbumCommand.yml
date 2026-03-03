@@ -1,0 +1,29 @@
+App\Collection\App\Command\UpdateAlbumCommand:
+    properties:
+        uuid:
+            - NotNull: ~
+        title:
+            - NotBlank: ~
+            - Length:
+                max: 255
+        artist:
+            - NotBlank: ~
+            - Length:
+                max: 255
+        releaseYear:
+            - Type:
+                type: integer
+            - Range:
+                min: 1900
+                max: 2100
+        format:
+            - NotBlank: ~
+        genre:
+            - Length:
+                max: 100
+        label:
+            - Length:
+                max: 255
+        coverUrl:
+            - Url:
+                requireTld: true
