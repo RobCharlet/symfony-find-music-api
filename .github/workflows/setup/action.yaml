@@ -5,7 +5,7 @@ runs:
   using: composite
   steps:
     - name: Setup PHP
-      uses: shivammathur/setup-php@2cb9b829437ee246e9b3cac53555a39208ca6d28
+      uses: shivammathur/setup-php@v2
       with:
         php-version: '8.4'
         tools: composer:v2
