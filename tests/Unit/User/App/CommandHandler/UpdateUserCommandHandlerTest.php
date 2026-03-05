@@ -25,8 +25,8 @@ class UpdateUserCommandHandlerTest extends TestCase
         $command = UpdateUserCommand::withData(
             $uuid,
             'new@example.com',
-            ['ROLE_ADMIN'],
             'new_plain',
+            ['ROLE_ADMIN'],
         );
 
         $mockReader = $this->createMock(UserReaderInterface::class);
@@ -66,6 +66,7 @@ class UpdateUserCommandHandlerTest extends TestCase
         $command = new UpdateUserCommand(
             uuid: $uuid,
             email: 'new@example.com',
+            password: null,
             roles: ['ROLE_ADMIN'],
         );
 
@@ -98,6 +99,8 @@ class UpdateUserCommandHandlerTest extends TestCase
         $command = new UpdateUserCommand(
             uuid: $uuid,
             email: 'new@example.com',
+            password: null,
+            roles: ['ROLE_USER'],
         );
 
         $mockReader = $this->createMock(UserReaderInterface::class);
