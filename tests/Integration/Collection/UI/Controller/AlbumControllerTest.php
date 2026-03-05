@@ -426,6 +426,21 @@ class AlbumControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function retrieveAlbumsByOwnerUuidSortedByTitleWithLowercaseDesc()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?sort_by=title&sort_order=desc');
+        $data = json_decode($client->getResponse()->getContent(), true)['data'];
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame('Mezzanine', $data[0]['title']);
+        $this->assertSame('Animal Magic', $data[1]['title']);
+    }
+
+    #[Test]
     public function retrieveAlbumsByOwnerUuidWithLowercaseSortOrderIsNormalized()
     {
         [$client, $user] = $this->createAuthenticatedClientWithUser();
