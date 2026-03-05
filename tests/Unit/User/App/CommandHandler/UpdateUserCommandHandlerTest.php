@@ -77,8 +77,7 @@ class UpdateUserCommandHandlerTest extends TestCase
             $uuid,
             'old@example.com',
             'old_hashed',
-            ['ROLE_USER'],
-            false
+            ['ROLE_USER']
         );
 
         $command = new UpdateUserCommand(
@@ -123,8 +122,7 @@ class UpdateUserCommandHandlerTest extends TestCase
             $uuid,
             'old@example.com',
             'old_hashed',
-            ['ROLE_USER'],
-            false
+            ['ROLE_USER']
         );
 
         $command = new UpdateUserCommand(
