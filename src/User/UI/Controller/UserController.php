@@ -138,8 +138,8 @@ class UserController extends AbstractController
         $command = UpdateUserCommand::withData(
             $uuid,
             $data['email'] ?? null,
+            $data['roles'] ?? null,
             $data['password'] ?? null,
-            $data['roles']
         );
 
         $bus->dispatch($command);
