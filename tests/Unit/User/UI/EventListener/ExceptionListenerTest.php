@@ -3,13 +3,13 @@
 namespace App\Tests\Unit\User\UI\EventListener;
 
 use App\Shared\UI\EventListener\GlobalExceptionListener;
-use App\User\Domain\UserNotFoundException;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\UI\EventListener\ExceptionListener;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Exception\JsonException as HttpFoundationJsonException;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;

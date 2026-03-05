@@ -45,16 +45,16 @@ class UserTest extends TestCase
     }
 
     #[Test]
-    public function updateUserWithoutPasswordThrowsTypeError(): void
+    public function updateUserWithoutPasswordKeepsExistingPassword(): void
     {
         $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
 
-        $user = new User($uuid, 'old@example.com', 'pw', ['ROLE_USER']);
-
-        // Documents bug: update() without password assigns null to string property
-        $this->expectException(\TypeError::class);
+        $user = new User($uuid, 'old@example.com', 'hashed_pw', ['ROLE_USER']);
 
         $user->update('new@example.com', ['ROLE_ADMIN']);
+
+        $this->assertSame('hashed_pw', $user->getPassword());
+        $this->assertSame('new@example.com', $user->getEmail());
     }
 
     #[Test]

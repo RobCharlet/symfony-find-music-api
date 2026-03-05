@@ -2,9 +2,9 @@
 
 namespace App\User\Infra\Repository\DoctrineORM;
 
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\UserWriterInterface;
 use App\User\Domain\User;
-use App\User\Domain\UserNotFoundException;
 use App\User\Infra\Security\SecurityUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Uuid;

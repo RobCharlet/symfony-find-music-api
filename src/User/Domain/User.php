@@ -55,6 +55,8 @@ final class User
     ): void {
         $this->email = $email;
         $this->roles = $roles;
-        $this->password = $password;
+        if (null !== $password) {
+            $this->password = $password;
+        }
     }
 }

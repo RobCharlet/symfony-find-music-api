@@ -19,4 +19,11 @@ final readonly class PasswordHasherAdapter implements PasswordHasherInterface
 
         return $this->userPasswordHasher->hashPassword($securityUser, $plainPassword);
     }
+
+    public function verify(User $user, string $plainPassword): bool
+    {
+        $securityUser = SecurityUser::fromDomain($user);
+
+        return $this->userPasswordHasher->isPasswordValid($securityUser, $plainPassword);
+    }
 }

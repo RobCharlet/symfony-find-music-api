@@ -105,8 +105,9 @@ class UserControllerTest extends WebTestCase
 
         $this->client->request('PUT', '/api/users/'.$uuid, content: json_encode([
             'email'    => 'updated@example.com',
-            'password' => 'newpassword',
-            'roles'    => ['ROLE_ADMIN'],
+            'password' => 'new_password',
+            'currentPassword' => 'hashed_password',
+            'roles'    => ['ROLE_USER'],
         ]));
 
         $this->assertResponseStatusCodeSame(204);

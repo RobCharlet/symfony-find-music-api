@@ -18,26 +18,16 @@ class UpdateUserCommandTest extends TestCase
             $uuid,
             'john@example.com',
             'new_password',
+            'current_password',
             ['ROLE_ADMIN'],
+            true
         );
 
         $this->assertSame($uuid, $command->uuid);
         $this->assertSame('john@example.com', $command->email);
         $this->assertSame('new_password', $command->password);
+        $this->assertSame('current_password', $command->currentPassword);
         $this->assertSame(['ROLE_ADMIN'], $command->roles);
-    }
-
-    #[Test]
-    public function updateUserCommandPasswordIsNullable(): void
-    {
-        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
-
-        $command = UpdateUserCommand::withData(
-            uuid: $uuid,
-            email: 'john@example.com',
-        );
-
-        $this->assertNull($command->password);
-        $this->assertSame([], $command->roles);
+        $this->assertTrue($command->isAdmin);
     }
 }

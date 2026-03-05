@@ -2,6 +2,7 @@
 
 namespace App\User\UI\Controller;
 
+use App\Shared\UI\Controller\UserAuthorizationTrait;
 use App\User\App\Command\CreateUserCommand;
 use App\User\App\Command\DeleteUserCommand;
 use App\User\App\Command\UpdateUserCommand;
@@ -25,6 +26,8 @@ use Symfony\Component\Uid\UuidV7;
 #[Security(name: 'Bearer')]
 class UserController extends AbstractController
 {
+    use UserAuthorizationTrait;
+
     #[Route('/me', name: 'user_identity', methods: ['GET'])]
     #[OA\Response(
         response: 200,
@@ -125,7 +128,7 @@ class UserController extends AbstractController
     )]
     #[OA\Response(response: 204, description: 'User updated')]
     #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
+    #[OA\Response(response: 403, description: 'Forbidden or invalid current password')]
     #[OA\Response(response: 404, description: 'Not found')]
     #[OA\Response(response: 422, description: 'Validation error')]
     public function updateUser(
@@ -139,7 +142,9 @@ class UserController extends AbstractController
             $uuid,
             $data['email'] ?? null,
             $data['password'] ?? null,
+            $data['currentPassword'] ?? null,
             $data['roles'] ?? null,
+            $this->getUserAuthorization()->isAdmin
         );
 
         $bus->dispatch($command);

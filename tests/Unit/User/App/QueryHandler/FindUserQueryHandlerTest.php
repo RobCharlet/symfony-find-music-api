@@ -4,9 +4,9 @@ namespace App\Tests\Unit\User\App\QueryHandler;
 
 use App\User\App\Query\FindUserQuery;
 use App\User\App\QueryHandler\FindUserQueryHandler;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\UserReaderInterface;
 use App\User\Domain\User;
-use App\User\Domain\UserNotFoundException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\UuidV7;

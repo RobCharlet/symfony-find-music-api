@@ -10,7 +10,9 @@ readonly class UpdateUserCommand
         public Uuid $uuid,
         public ?string $email,
         public ?string $password,
+        public ?string $currentPassword,
         public mixed $roles,
+        public bool $isAdmin,
     ) {
     }
 
@@ -18,13 +20,17 @@ readonly class UpdateUserCommand
         Uuid $uuid,
         ?string $email,
         ?string $password = null,
+        ?string $currentPassword = null,
         mixed $roles = [],
+        bool $isAdmin = false,
     ): self {
         return new self(
             uuid: $uuid,
             email: $email,
             password: $password,
+            currentPassword: $currentPassword,
             roles: $roles,
+            isAdmin: $isAdmin
         );
     }
 }
