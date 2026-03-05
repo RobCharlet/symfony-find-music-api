@@ -17,8 +17,8 @@ class UpdateUserCommandTest extends TestCase
         $command = UpdateUserCommand::withData(
             $uuid,
             'john@example.com',
-            ['ROLE_ADMIN'],
             'new_password',
+            ['ROLE_ADMIN'],
         );
 
         $this->assertSame($uuid, $command->uuid);
@@ -32,7 +32,7 @@ class UpdateUserCommandTest extends TestCase
     {
         $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
 
-        $command = new UpdateUserCommand(
+        $command = UpdateUserCommand::withData(
             uuid: $uuid,
             email: 'john@example.com',
         );

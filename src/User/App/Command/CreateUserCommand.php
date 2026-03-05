@@ -10,7 +10,7 @@ readonly class CreateUserCommand
         public Uuid $uuid,
         public string $email,
         public string $password,
-        public mixed $roles = ['ROLE_USER'],
+        public mixed $roles,
     ) {
     }
 
