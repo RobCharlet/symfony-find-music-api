@@ -12,5 +12,12 @@ interface AlbumReaderInterface
 
     public function findAll(int $page, int $limit): PaginatorInterface;
 
-    public function findAllByOwnerUuid(Uuid $ownerUuid): array;
+    public function findAllByOwnerUuid(
+        Uuid $ownerUuid,
+        int $page,
+        int $limit,
+        ?string $sortBy,
+        ?string $sortOrder,
+        ?string $genre,
+    ): PaginatorInterface;
 }

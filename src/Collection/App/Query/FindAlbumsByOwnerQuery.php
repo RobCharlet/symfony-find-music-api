@@ -8,11 +8,35 @@ final readonly class FindAlbumsByOwnerQuery
 {
     public function __construct(
         public Uuid $ownerUuid,
+        public Uuid $requesterUuid,
+        public bool $isAdmin,
+        public int $page,
+        public int $limit,
+        public ?string $sortBy,
+        public ?string $sortOrder,
+        public ?string $genre,
     ) {
     }
 
-    public static function withOwnerUuid(Uuid $ownerUuid): self
-    {
-        return new self($ownerUuid);
+    public static function withOwnerUuid(
+        Uuid $ownerUuid,
+        Uuid $requesterUuid,
+        bool $isAdmin,
+        int $page = 1,
+        int $limit = 50,
+        ?string $sortBy = null,
+        ?string $sortOrder = null,
+        ?string $genre = null,
+    ): self {
+        return new self(
+            $ownerUuid,
+            $requesterUuid,
+            $isAdmin,
+            $page,
+            $limit,
+            $sortBy,
+            $sortOrder,
+            $genre
+        );
     }
 }

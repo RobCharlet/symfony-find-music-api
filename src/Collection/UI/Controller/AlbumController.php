@@ -63,7 +63,7 @@ class AlbumController extends AbstractController
         $uuid = UuidV7::v7();
 
         $userAuthorization = $this->getUserAuthorization();
-        $payload           = $request->toArray();
+        $payload = $request->toArray();
 
         $command = AddAlbumCommand::withData($uuid, $userAuthorization->userUuid, $payload);
         $commandBus->dispatch($command);
@@ -109,7 +109,11 @@ class AlbumController extends AbstractController
     ): JsonResponse {
         $userAuthorization = $this->getUserAuthorization();
 
-        $query    = FindAlbumQuery::withUuid($uuid, $userAuthorization->userUuid, $userAuthorization->isAdmin);
+        $query = FindAlbumQuery::withUuid(
+            $uuid,
+            $userAuthorization->userUuid,
+            $userAuthorization->isAdmin
+        );
         $envelope = $queryBus->dispatch($query);
 
         $album = $envelope->last(HandledStamp::class)->getResult();
@@ -121,33 +125,84 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/owner/{uuid}', name: 'album_owner_find', requirements: ['_format' => 'json'], methods: ['GET'])]
+    #[OA\Parameter(name: 'page', in: 'query', schema: new OA\Schema(type: 'integer', default: 1))]
+    #[OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer', default: 50))]
+    #[OA\Parameter(name: 'sort_by', in: 'query', schema: new OA\Schema(type: 'string', nullable: true))]
+    #[OA\Parameter(name: 'sort_order', in: 'query', schema: new OA\Schema(type: 'string', enum: ['ASC', 'DESC'], nullable: true))]
+    #[OA\Parameter(name: 'genre', in: 'query', schema: new OA\Schema(type: 'string', nullable: true))]
     #[OA\Response(
         response: 200,
         description: 'Returns albums of an owner',
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/Album')
+            properties: [
+                new OA\Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/Album')
+                ),
+                new OA\Property(
+                    property: 'pagination',
+                    properties: [
+                        new OA\Property(property: 'currentPage', type: 'integer'),
+                        new OA\Property(property: 'maxPerPage', type: 'integer'),
+                        new OA\Property(property: 'totalItems', type: 'integer'),
+                        new OA\Property(property: 'totalPages', type: 'integer'),
+                        new OA\Property(property: 'hasNextPage', type: 'boolean'),
+                        new OA\Property(property: 'hasPreviousPage', type: 'boolean'),
+                    ],
+                    type: 'object'
+                ),
+            ]
         )
     )]
+    #[OA\Response(response: 403, description: 'Forbidden')]
     #[Security(name: 'Bearer')]
     public function findOwnerAlbums(
         AlbumNormalizer $normalizer,
         MessageBusInterface $queryBus,
+        Request $request,
         Uuid $uuid,
     ): JsonResponse {
-        $query    = FindAlbumsByOwnerQuery::withOwnerUuid($uuid);
-        $envelope = $queryBus->dispatch($query);
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 50);
+        $sortBy = $request->query->getString('sort_by') ?: null;
+        $sortOrder = strtoupper($request->query->getString('sort_order')) ?: null;
+        $genre = $request->query->getString('genre') ?: null;
 
-        $results = $envelope->last(HandledStamp::class)->getResult();
+        $userAuthorization = $this->getUserAuthorization();
+
+        $query = FindAlbumsByOwnerQuery::withOwnerUuid(
+            $uuid,
+            $userAuthorization->userUuid,
+            $userAuthorization->isAdmin,
+            $page,
+            $limit,
+            $sortBy,
+            $sortOrder,
+            $genre
+        );
+
+        $envelope = $queryBus->dispatch($query);
+        $paginator = $envelope->last(HandledStamp::class)->getResult();
 
         $albums = [];
 
-        foreach ($results as $album) {
+        foreach ($paginator as $album) {
             $albums[] = $normalizer->normalize($album);
         }
 
         return new JsonResponse(
-            ['data' => $albums],
+            [
+                'data' => $albums,
+                'pagination' => [
+                    'currentPage' => $paginator->getCurrentPage(),
+                    'maxPerPage' => $paginator->getMaxPerPage(),
+                    'totalItems' => $paginator->getTotalItems(),
+                    'totalPages' => $paginator->getTotalPages(),
+                    'hasNextPage' => $paginator->hasNextPage(),
+                    'hasPreviousPage' => $paginator->hasPreviousPage(),
+                ],
+            ],
             Response::HTTP_OK
         );
     }

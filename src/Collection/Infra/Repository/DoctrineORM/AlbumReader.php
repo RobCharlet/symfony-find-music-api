@@ -47,8 +47,41 @@ readonly class AlbumReader implements AlbumReaderInterface
         return $album;
     }
 
-    public function findAllByOwnerUuid(Uuid $ownerUuid): array
-    {
-        return $this->entityManager->getRepository(Album::class)->findBy(['ownerUuid' => $ownerUuid]);
+    public function findAllByOwnerUuid(
+        Uuid $ownerUuid,
+        int $page,
+        int $limit,
+        ?string $sortBy,
+        ?string $sortOrder,
+        ?string $genre,
+    ): PaginatorInterface {
+        $query = $this->entityManager
+            ->createQueryBuilder()
+            ->select('a')
+            ->addSelect('e')
+            ->from(Album::class, 'a')
+            ->leftJoin('a.externalReferences', 'e')
+            ->where('a.ownerUuid = :ownerUuid')
+            ->setParameter('ownerUuid', $ownerUuid);
+
+        if ($genre) {
+            $query->andWhere('a.genre = :genre')
+                ->setParameter('genre', $genre);
+        }
+
+        if ($sortBy && $sortOrder) {
+            $query->orderBy('a.'.$sortBy, $sortOrder);
+        } elseif ($sortBy) {
+            $query->orderBy('a.'.$sortBy);
+        } else {
+            $query->orderBy('a.uuid', 'ASC');
+        }
+
+        $paginator = new Paginator(new QueryAdapter($query->getQuery()));
+        $paginator->setAllowOutOfRangePages(true);
+        $paginator->setMaxPerPage($limit);
+        $paginator->setCurrentPage($page);
+
+        return $paginator;
     }
 }

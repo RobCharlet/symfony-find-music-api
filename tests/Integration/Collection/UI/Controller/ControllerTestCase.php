@@ -18,13 +18,13 @@ abstract class ControllerTestCase extends WebTestCase
     use Factories;
     use JWTAuthenticatedClientTrait;
 
-    protected function createAuthenticatedClientWithUser(array $roles = ['ROLE_USER']): array
+    protected function createAuthenticatedClientWithUser(array $roles = ['ROLE_USER'], string $email = 'customUser@test.com'): array
     {
         static::ensureKernelShutdown();
         $client = static::createClient();
 
         $user = SecurityUserFactory::createOne([
-            'email' => 'customUser@test.com',
+            'email' => $email,
             'password' => 'password',
             'roles' => $roles,
         ]);

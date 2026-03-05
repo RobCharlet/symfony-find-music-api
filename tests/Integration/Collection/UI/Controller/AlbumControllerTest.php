@@ -39,6 +39,34 @@ class AlbumControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function retrieveAlbumsByOwnerUuid()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid());
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $data = $paginator['data'];
+        $pagination = $paginator['pagination'];
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+        $this->assertSame('Animal Magic', $data[0]['title']);
+        $this->assertSame('Bonobo', $data[0]['artist']);
+        $this->assertSame(2000, $data[0]['releaseYear']);
+        $this->assertSame('Vinyle', $data[0]['format']);
+        $this->assertSame('Trip Hop', $data[0]['genre']);
+        $this->assertSame('Ninja Tune', $data[0]['label']);
+        $this->assertSame('https://example.com/cover.jpg', $data[0]['coverUrl']);
+        $this->assertSame(1, $pagination['currentPage']);
+        $this->assertSame(50, $pagination['maxPerPage']);
+        $this->assertSame(1, $pagination['totalItems']);
+        $this->assertSame(1, $pagination['totalPages']);
+        $this->assertFalse($pagination['hasNextPage']);
+        $this->assertFalse($pagination['hasPreviousPage']);
+    }
+
+    #[Test]
     public function retrieveAlbumNotFound()
     {
 
@@ -329,6 +357,135 @@ class AlbumControllerTest extends ControllerTestCase
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('violations', $data);
         $this->assertNotEmpty($data['violations']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidSortedByTitleAsc()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?sort_by=title&sort_order=ASC');
+        $data = json_decode($client->getResponse()->getContent(), true)['data'];
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame('Animal Magic', $data[0]['title']);
+        $this->assertSame('Mezzanine', $data[1]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByGenre()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack', 'genre' => 'Trip Hop']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Selected Ambient Works', 'artist' => 'Aphex Twin', 'genre' => 'Electronic']);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?genre=Electronic');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Selected Ambient Works', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithPageAndLimit()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Selected Ambient Works', 'artist' => 'Aphex Twin']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?page=2&limit=1');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(2, $paginator['pagination']['currentPage']);
+        $this->assertSame(1, $paginator['pagination']['maxPerPage']);
+        $this->assertSame(3, $paginator['pagination']['totalItems']);
+        $this->assertSame(3, $paginator['pagination']['totalPages']);
+        $this->assertTrue($paginator['pagination']['hasNextPage']);
+        $this->assertTrue($paginator['pagination']['hasPreviousPage']);
+        $this->assertCount(1, $paginator['data']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidSortedByTitleDesc()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?sort_by=title&sort_order=DESC');
+        $data = json_decode($client->getResponse()->getContent(), true)['data'];
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame('Mezzanine', $data[0]['title']);
+        $this->assertSame('Animal Magic', $data[1]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithLowercaseSortOrderIsNormalized()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?sort_by=title&sort_order=asc');
+        $data = json_decode($client->getResponse()->getContent(), true)['data'];
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame('Animal Magic', $data[0]['title']);
+        $this->assertSame('Mezzanine', $data[1]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithInvalidSortByReturns422()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?sort_by=invalid_field');
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('violations', $data);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithInvalidSortOrderReturns422()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'?sort_by=title&sort_order=INVALID');
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('violations', $data);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidUnauthenticatedReturns401()
+    {
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+
+        $client->request('GET', '/api/albums/owner/019c2e97-8e0e-776c-bf55-76a2765e369d');
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidByDifferentUserReturns403()
+    {
+        [$ownerClient, $owner] = $this->createAuthenticatedClientWithUser(email: 'owner@test.com');
+        $this->createAlbumOwnedBy($owner);
+
+        [$otherClient] = $this->createAuthenticatedClientWithUser(email: 'other@test.com');
+
+        $otherClient->request('GET', '/api/albums/owner/'.$owner->getUuid());
+
+        $this->assertResponseStatusCodeSame(403);
     }
 
     #[Test]
