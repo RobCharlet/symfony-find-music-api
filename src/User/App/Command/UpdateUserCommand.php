@@ -8,6 +8,7 @@ readonly class UpdateUserCommand
 {
     public function __construct(
         public Uuid $uuid,
+        public Uuid $requesterUuid,
         public ?string $email,
         public ?string $password,
         public ?string $currentPassword,
@@ -18,6 +19,7 @@ readonly class UpdateUserCommand
 
     public static function withData(
         Uuid $uuid,
+        Uuid $requesterUuid,
         ?string $email,
         ?string $password = null,
         ?string $currentPassword = null,
@@ -26,6 +28,7 @@ readonly class UpdateUserCommand
     ): self {
         return new self(
             uuid: $uuid,
+            requesterUuid: $requesterUuid,
             email: $email,
             password: $password,
             currentPassword: $currentPassword,

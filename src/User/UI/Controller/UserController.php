@@ -100,11 +100,13 @@ class UserController extends AbstractController
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
     public function findUser(
-        string $uuid,
+        Uuid $uuid,
         UserNormalizer $normalizer,
         MessageBusInterface $bus,
     ): JsonResponse {
-        $query = FindUserQuery::withUuid(UuidV7::fromString($uuid));
+        $userAuthorization = $this->getUserAuthorization();
+
+        $query    = FindUserQuery::withUuid($uuid, $userAuthorization->userUuid, $userAuthorization->isAdmin);
         $envelope = $bus->dispatch($query);
 
         $user = $envelope->last(HandledStamp::class)->getResult();
@@ -138,13 +140,16 @@ class UserController extends AbstractController
     ): JsonResponse {
         $data = $request->toArray();
 
+        $userAuthorization = $this->getUserAuthorization();
+
         $command = UpdateUserCommand::withData(
             $uuid,
+            $userAuthorization->userUuid,
             $data['email'] ?? null,
             $data['password'] ?? null,
             $data['currentPassword'] ?? null,
             $data['roles'] ?? null,
-            $this->getUserAuthorization()->isAdmin
+            $userAuthorization->isAdmin
         );
 
         $bus->dispatch($command);
@@ -163,7 +168,9 @@ class UserController extends AbstractController
         MessageBusInterface $bus,
         Uuid $uuid,
     ): JsonResponse {
-        $command = DeleteUserCommand::withUuid($uuid);
+        $userAuthorization = $this->getUserAuthorization();
+
+        $command = DeleteUserCommand::withUuid($uuid, $userAuthorization->userUuid, $userAuthorization->isAdmin);
 
         $bus->dispatch($command);
 

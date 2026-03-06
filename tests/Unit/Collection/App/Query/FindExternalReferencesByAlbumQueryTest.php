@@ -12,9 +12,10 @@ class FindExternalReferencesByAlbumQueryTest extends TestCase
     #[Test]
     public function findExternalReferencesByAlbumQueryIsCreatedWithAlbumUuid()
     {
-        $albumUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+        $albumUuid     = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+        $requesterUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
 
-        $query = FindExternalReferencesByAlbumQuery::withAlbumUuid($albumUuid);
+        $query = FindExternalReferencesByAlbumQuery::withAlbumUuid($albumUuid, $requesterUuid, false);
 
         $this->assertSame($albumUuid, $query->albumUuid);
     }

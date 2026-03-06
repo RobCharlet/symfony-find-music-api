@@ -5,6 +5,7 @@ namespace App\Tests\Unit\User\App\CommandHandler;
 use App\User\App\Command\UpdateUserCommand;
 use App\User\App\CommandHandler\UpdateUserCommandHandler;
 use App\User\Domain\Exception\InvalidCurrentPasswordException;
+use App\User\Domain\Exception\UserAccessForbiddenException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\PasswordHasherInterface;
 use App\User\Domain\Repository\UserReaderInterface;
@@ -21,14 +22,10 @@ class UpdateUserCommandHandlerTest extends TestCase
     {
         $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
 
-        $existingUser = new User(
-            $uuid,
-            'old@example.com',
-            'old_hashed',
-            ['ROLE_USER']
-        );
+        $existingUser = new User($uuid, 'old@example.com', 'old_hashed', ['ROLE_USER']);
 
         $command = UpdateUserCommand::withData(
+            $uuid,
             $uuid,
             'new@example.com',
             'new_plain',
@@ -38,31 +35,48 @@ class UpdateUserCommandHandlerTest extends TestCase
         );
 
         $mockReader = $this->createMock(UserReaderInterface::class);
-        $mockReader
-            ->expects($this->once())
-            ->method('findUserByUuid')
-            ->with($uuid)
-            ->willReturn($existingUser);
+        $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($existingUser);
 
         $mockHasher = $this->createMock(PasswordHasherInterface::class);
-        $mockHasher
-            ->expects($this->once())
-            ->method('verify')
-            ->willReturn(true);
-        $mockHasher
-            ->expects($this->once())
-            ->method('hash')
-            ->willReturn('new_hashed');
+        $mockHasher->expects($this->once())->method('verify')->willReturn(true);
+        $mockHasher->expects($this->once())->method('hash')->willReturn('new_hashed');
 
         $mockWriter = $this->createMock(UserWriterInterface::class);
-        $mockWriter
-            ->expects($this->once())
-            ->method('update')
-            ->willReturnCallback(function (User $user) {
-                $this->assertSame('new@example.com', $user->getEmail());
-                $this->assertSame('new_hashed', $user->getPassword());
-                $this->assertContains('ROLE_USER', $user->getRoles());
-            });
+        $mockWriter->expects($this->once())->method('update')->willReturnCallback(function (User $user) {
+            $this->assertSame('new@example.com', $user->getEmail());
+            $this->assertSame('new_hashed', $user->getPassword());
+            $this->assertContains('ROLE_USER', $user->getRoles());
+        });
+
+        $handler = new UpdateUserCommandHandler($mockHasher, $mockReader, $mockWriter);
+        $handler($command);
+    }
+
+    #[Test]
+    public function nonAdminCannotUpdateAnotherUser(): void
+    {
+        $uuid      = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $otherUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
+
+        $command = new UpdateUserCommand(
+            uuid: $uuid,
+            requesterUuid: $otherUuid,
+            email: 'new@example.com',
+            password: null,
+            currentPassword: null,
+            roles: ['ROLE_USER'],
+            isAdmin: false,
+        );
+
+        $mockReader = $this->createMock(UserReaderInterface::class);
+        $mockReader->expects($this->never())->method('findUserByUuid');
+
+        $mockHasher = $this->createMock(PasswordHasherInterface::class);
+        $mockHasher->expects($this->never())->method('verify');
+
+        $mockWriter = $this->createStub(UserWriterInterface::class);
+
+        $this->expectException(UserAccessForbiddenException::class);
 
         $handler = new UpdateUserCommandHandler($mockHasher, $mockReader, $mockWriter);
         $handler($command);
@@ -73,15 +87,11 @@ class UpdateUserCommandHandlerTest extends TestCase
     {
         $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
 
-        $existingUser = new User(
-            $uuid,
-            'old@example.com',
-            'old_hashed',
-            ['ROLE_USER']
-        );
+        $existingUser = new User($uuid, 'old@example.com', 'old_hashed', ['ROLE_USER']);
 
         $command = new UpdateUserCommand(
             uuid: $uuid,
+            requesterUuid: $uuid,
             email: 'new@example.com',
             password: null,
             currentPassword: null,
@@ -90,20 +100,11 @@ class UpdateUserCommandHandlerTest extends TestCase
         );
 
         $mockReader = $this->createMock(UserReaderInterface::class);
-        $mockReader
-            ->expects($this->once())
-            ->method('findUserByUuid')
-            ->with($uuid)
-            ->willReturn($existingUser);
+        $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($existingUser);
 
         $mockHasher = $this->createMock(PasswordHasherInterface::class);
-        $mockHasher
-            ->expects($this->once())
-            ->method('verify')
-            ->willReturn(false);
-        $mockHasher
-            ->expects($this->never())
-            ->method('hash');
+        $mockHasher->expects($this->once())->method('verify')->willReturn(false);
+        $mockHasher->expects($this->never())->method('hash');
 
         $mockWriter = $this->createStub(UserWriterInterface::class);
 
@@ -118,15 +119,11 @@ class UpdateUserCommandHandlerTest extends TestCase
     {
         $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
 
-        $existingUser = new User(
-            $uuid,
-            'old@example.com',
-            'old_hashed',
-            ['ROLE_USER']
-        );
+        $existingUser = new User($uuid, 'old@example.com', 'old_hashed', ['ROLE_USER']);
 
         $command = new UpdateUserCommand(
             uuid: $uuid,
+            requesterUuid: $uuid,
             email: 'new@example.com',
             password: 'new_hashed',
             currentPassword: 'invalid_hashed',
@@ -135,20 +132,11 @@ class UpdateUserCommandHandlerTest extends TestCase
         );
 
         $mockReader = $this->createMock(UserReaderInterface::class);
-        $mockReader
-            ->expects($this->once())
-            ->method('findUserByUuid')
-            ->with($uuid)
-            ->willReturn($existingUser);
+        $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($existingUser);
 
         $mockHasher = $this->createMock(PasswordHasherInterface::class);
-        $mockHasher
-            ->expects($this->once())
-            ->method('verify')
-            ->willReturn(false);
-        $mockHasher
-            ->expects($this->never())
-            ->method('hash');
+        $mockHasher->expects($this->once())->method('verify')->willReturn(false);
+        $mockHasher->expects($this->never())->method('hash');
 
         $mockWriter = $this->createStub(UserWriterInterface::class);
 
@@ -161,12 +149,14 @@ class UpdateUserCommandHandlerTest extends TestCase
     #[Test]
     public function adminCanUpdateWithoutCurrentPassword(): void
     {
-        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $uuid      = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $adminUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
 
         $existingUser = new User($uuid, 'old@example.com', 'old_hashed', ['ROLE_USER']);
 
         $command = new UpdateUserCommand(
             uuid: $uuid,
+            requesterUuid: $adminUuid,
             email: 'new@example.com',
             password: null,
             currentPassword: null,
@@ -175,11 +165,7 @@ class UpdateUserCommandHandlerTest extends TestCase
         );
 
         $mockReader = $this->createMock(UserReaderInterface::class);
-        $mockReader
-            ->expects($this->once())
-            ->method('findUserByUuid')
-            ->with($uuid)
-            ->willReturn($existingUser);
+        $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($existingUser);
 
         $mockHasher = $this->createMock(PasswordHasherInterface::class);
         $mockHasher->expects($this->never())->method('verify');
@@ -199,6 +185,7 @@ class UpdateUserCommandHandlerTest extends TestCase
 
         $command = new UpdateUserCommand(
             uuid: $uuid,
+            requesterUuid: $uuid,
             email: 'new@example.com',
             password: null,
             currentPassword: null,
@@ -207,21 +194,13 @@ class UpdateUserCommandHandlerTest extends TestCase
         );
 
         $mockReader = $this->createMock(UserReaderInterface::class);
-        $mockReader
-            ->expects($this->once())
-            ->method('findUserByUuid')
-            ->with($uuid)
-            ->willThrowException(new UserNotFoundException());
+        $mockReader->expects($this->once())->method('findUserByUuid')->willThrowException(new UserNotFoundException());
 
         $mockHasher = $this->createMock(PasswordHasherInterface::class);
-        $mockHasher
-            ->expects($this->never())
-            ->method('hash');
+        $mockHasher->expects($this->never())->method('hash');
 
         $mockWriter = $this->createMock(UserWriterInterface::class);
-        $mockWriter
-            ->expects($this->never())
-            ->method('update');
+        $mockWriter->expects($this->never())->method('update');
 
         $this->expectException(UserNotFoundException::class);
 

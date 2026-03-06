@@ -125,6 +125,33 @@ class ExternalReferenceControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function ownerCanListExternalReferencesByAlbum()
+    {
+        $albumUuid  = '019c1ec8-961c-7802-90e4-b8163542a2cd';
+        $extRefUuid = '019c2e97-b1a2-7d3e-9f44-1a2b3c4d5e6f';
+
+        [$client, $album] = $this->createAuthenticatedClientWithAlbum($albumUuid);
+
+        ExternalReferenceFactory::createOne([
+            'uuid'       => UuidV7::fromString($extRefUuid),
+            'album'      => $album,
+            'platform'   => PlatformEnum::Spotify,
+            'externalId' => 'spotify-123',
+            'metadata'   => null,
+        ]);
+
+        $client->request('GET', '/api/external-references/album/'.$albumUuid);
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+        $this->assertCount(1, $data['data']);
+        $this->assertSame('spotify', $data['data'][0]['platform']);
+        $this->assertSame('spotify-123', $data['data'][0]['externalId']);
+        $this->assertSame($albumUuid, $data['data'][0]['albumUuid']);
+    }
+
+    #[Test]
     public function createExternalReferenceReturnsLocationHeader()
     {
         $albumUuid = '019c1ec8-961c-7802-90e4-b8163542a2cd';
@@ -271,6 +298,57 @@ class ExternalReferenceControllerTest extends ControllerTestCase
         $data = json_decode($this->client->getResponse()->getContent(), true);
 
         $this->assertSame('invalid_json', $data['type']);
+    }
+
+    #[Test]
+    public function nonOwnerCannotCreateExternalReferenceOnAnotherUsersAlbum()
+    {
+        $albumUuid = '019c1ec8-961c-7802-90e4-b8163542a2cd';
+
+        // Album owned by user A
+        [$_clientA, $userA] = $this->createAuthenticatedClientWithUser(email: 'owner@example.com');
+        $this->createAlbumOwnedBy($userA, ['uuid' => UuidV7::fromString($albumUuid)]);
+
+        // User B tries to add an external reference to user A's album
+        [$clientB] = $this->createAuthenticatedClientWithUser(email: 'intruder@example.com');
+        $clientB->request('POST', '/api/external-references', content: json_encode([
+            'albumUuid'  => $albumUuid,
+            'platform'   => 'spotify',
+            'externalId' => 'spotify-999',
+        ]));
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        $data = json_decode($clientB->getResponse()->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
+    }
+
+    #[Test]
+    public function nonOwnerCannotListExternalReferencesOfAnotherUsersAlbum()
+    {
+        $albumUuid  = '019c1ec8-961c-7802-90e4-b8163542a2cd';
+        $extRefUuid = '019c2e97-b1a2-7d3e-9f44-1a2b3c4d5e6f';
+
+        // Album owned by user A
+        [$_clientA, $userA] = $this->createAuthenticatedClientWithUser(email: 'owner2@example.com');
+        $album = $this->createAlbumOwnedByAndReturnAlbum($userA, ['uuid' => UuidV7::fromString($albumUuid)])['album'];
+
+        ExternalReferenceFactory::createOne([
+            'uuid'       => UuidV7::fromString($extRefUuid),
+            'album'      => $album,
+            'platform'   => PlatformEnum::Spotify,
+            'externalId' => 'spotify-123',
+            'metadata'   => null,
+        ]);
+
+        // User B tries to list external references of user A's album
+        [$clientB] = $this->createAuthenticatedClientWithUser(email: 'intruder2@example.com');
+        $clientB->request('GET', '/api/external-references/album/'.$albumUuid);
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        $data = json_decode($clientB->getResponse()->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
     }
 
     #[Test]

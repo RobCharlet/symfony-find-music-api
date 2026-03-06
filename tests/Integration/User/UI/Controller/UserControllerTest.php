@@ -24,7 +24,7 @@ class UserControllerTest extends WebTestCase
     }
 
     #[Test]
-    public function retrieveUser()
+    public function adminCanRetrieveAnyUser()
     {
         $uuid = '019c1ec8-961c-7802-90e4-b8163542a2cd';
         SecurityUserFactory::createOne([
@@ -43,6 +43,25 @@ class UserControllerTest extends WebTestCase
         $this->assertArrayHasKey('uuid', $data);
         $this->assertArrayNotHasKey('password', $data);
         $this->assertArrayNotHasKey('roles', $data);
+    }
+
+    #[Test]
+    public function nonAdminCannotRetrieveAnotherUser()
+    {
+        $uuid = '019c1ec8-961c-7802-90e4-b8163542a2cd';
+        SecurityUserFactory::createOne([
+            'uuid'  => UuidV7::fromString($uuid),
+            'email' => 'other@example.com',
+            'roles' => ['ROLE_USER'],
+        ]);
+
+        $client = $this->createJWTAuthenticatedClient();
+        $client->request('GET', '/api/users/'.$uuid);
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
     }
 
     #[Test]
@@ -153,6 +172,96 @@ class UserControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(404);
         $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+    }
+
+    #[Test]
+    public function userCanUpdateTheirOwnAccount()
+    {
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+
+        $uuid = UuidV7::fromString('019c1ec8-961c-7802-90e4-b8163542a2cd');
+        $user = SecurityUserFactory::createOne([
+            'uuid'     => $uuid,
+            'email'    => 'self-update@example.com',
+            'password' => 'current-secret',
+            'roles'    => ['ROLE_USER'],
+        ]);
+
+        $jwtManager = $client->getContainer()->get(JWTTokenManagerInterface::class);
+        $token      = $jwtManager->create($user);
+        $client->setServerParameter('HTTP_AUTHORIZATION', sprintf('Bearer %s', $token));
+
+        $client->request('PUT', '/api/users/'.$uuid->toRfc4122(), content: json_encode([
+            'email'           => 'self-updated@example.com',
+            'currentPassword' => 'current-secret',
+            'roles'           => ['ROLE_USER'],
+        ]));
+
+        $this->assertResponseStatusCodeSame(204);
+    }
+
+    #[Test]
+    public function userCanDeleteTheirOwnAccount()
+    {
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+
+        $uuid = UuidV7::fromString('019c1ec8-961c-7802-90e4-b8163542a2cd');
+        $user = SecurityUserFactory::createOne([
+            'uuid'  => $uuid,
+            'email' => 'self-delete@example.com',
+            'roles' => ['ROLE_USER'],
+        ]);
+
+        $jwtManager = $client->getContainer()->get(JWTTokenManagerInterface::class);
+        $token      = $jwtManager->create($user);
+        $client->setServerParameter('HTTP_AUTHORIZATION', sprintf('Bearer %s', $token));
+
+        $client->request('DELETE', '/api/users/'.$uuid->toRfc4122());
+
+        $this->assertResponseStatusCodeSame(204);
+    }
+
+    #[Test]
+    public function nonAdminCannotDeleteAnotherUser()
+    {
+        $uuid = '019c1ec8-961c-7802-90e4-b8163542a2cd';
+        SecurityUserFactory::createOne([
+            'uuid'  => UuidV7::fromString($uuid),
+            'email' => 'victim@example.com',
+            'roles' => ['ROLE_USER'],
+        ]);
+
+        $client = $this->createJWTAuthenticatedClient();
+        $client->request('DELETE', '/api/users/'.$uuid);
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
+    }
+
+    #[Test]
+    public function nonAdminCannotUpdateAnotherUser()
+    {
+        $uuid = '019c1ec8-961c-7802-90e4-b8163542a2cd';
+        SecurityUserFactory::createOne([
+            'uuid'  => UuidV7::fromString($uuid),
+            'email' => 'other@example.com',
+            'roles' => ['ROLE_USER'],
+        ]);
+
+        $client = $this->createJWTAuthenticatedClient();
+        $client->request('PUT', '/api/users/'.$uuid, content: json_encode([
+            'email'           => 'hacked@example.com',
+            'currentPassword' => 'whatever',
+        ]));
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
     }
 
     #[Test]

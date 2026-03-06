@@ -3,6 +3,7 @@
 namespace App\User\UI\EventListener;
 
 use App\User\Domain\Exception\InvalidCurrentPasswordException;
+use App\User\Domain\Exception\UserAccessForbiddenException;
 use App\User\Domain\Exception\UserNotFoundException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -33,6 +34,21 @@ class ExceptionListener
                         'detail' => 'User not found.',
                     ],
                     Response::HTTP_NOT_FOUND,
+                    ['Content-Type' => 'application/problem+json']
+                ));
+
+                return;
+            }
+
+            if ($nested instanceof UserAccessForbiddenException) {
+                $event->setResponse(new JsonResponse(
+                    [
+                        'type'   => 'forbidden',
+                        'title'  => 'Forbidden',
+                        'status' => Response::HTTP_FORBIDDEN,
+                        'detail' => 'Forbidden.',
+                    ],
+                    Response::HTTP_FORBIDDEN,
                     ['Content-Type' => 'application/problem+json']
                 ));
 

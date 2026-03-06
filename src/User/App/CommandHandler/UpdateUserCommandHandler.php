@@ -4,6 +4,7 @@ namespace App\User\App\CommandHandler;
 
 use App\User\App\Command\UpdateUserCommand;
 use App\User\Domain\Exception\InvalidCurrentPasswordException;
+use App\User\Domain\Exception\UserAccessForbiddenException;
 use App\User\Domain\PasswordHasherInterface;
 use App\User\Domain\Repository\UserReaderInterface;
 use App\User\Domain\Repository\UserWriterInterface;
@@ -21,6 +22,10 @@ readonly class UpdateUserCommandHandler
 
     public function __invoke(UpdateUserCommand $command): void
     {
+        if (!$command->isAdmin && !$command->requesterUuid->equals($command->uuid)) {
+            throw new UserAccessForbiddenException();
+        }
+
         $user = $this->userReader->findUserByUuid($command->uuid);
 
         if (

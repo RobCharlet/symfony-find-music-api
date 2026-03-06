@@ -2,3 +2,5 @@ App\User\App\Query\FindUserQuery:
     properties:
         uuid:
             - NotNull: ~
+        requesterUuid:
+            - NotNull: ~

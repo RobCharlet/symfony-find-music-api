@@ -2,6 +2,8 @@ App\User\App\Command\UpdateUserCommand:
     properties:
         uuid:
             - NotNull: ~
+        requesterUuid:
+            - NotNull: ~
         password:
             - Length:
                   max: 180

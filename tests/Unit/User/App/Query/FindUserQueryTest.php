@@ -14,7 +14,7 @@ class FindUserQueryTest extends TestCase
     {
         $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
 
-        $query = FindUserQuery::withUuid($uuid);
+        $query = FindUserQuery::withUuid($uuid, $uuid, false);
 
         $this->assertSame($uuid, $query->uuid);
     }

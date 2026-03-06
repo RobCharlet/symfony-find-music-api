@@ -16,6 +16,7 @@ class UpdateUserCommandTest extends TestCase
 
         $command = UpdateUserCommand::withData(
             $uuid,
+            $uuid,
             'john@example.com',
             'new_password',
             'current_password',

@@ -55,10 +55,11 @@ class ExternalReferenceController extends AbstractController
     #[Security(name: 'Bearer')]
     public function create(MessageBusInterface $commandBus, Request $request): JsonResponse
     {
-        $uuid    = UuidV7::v7();
-        $payload = $request->toArray();
+        $uuid              = UuidV7::v7();
+        $payload           = $request->toArray();
+        $userAuthorization = $this->getUserAuthorization();
 
-        $command = AddExternalReferenceCommand::withData($uuid, $payload);
+        $command = AddExternalReferenceCommand::withData($uuid, $userAuthorization->userUuid, $userAuthorization->isAdmin, $payload);
         $commandBus->dispatch($command);
 
         return new JsonResponse(
@@ -113,7 +114,9 @@ class ExternalReferenceController extends AbstractController
         MessageBusInterface $queryBus,
         Uuid $albumUuid,
     ): JsonResponse {
-        $query    = FindExternalReferencesByAlbumQuery::withAlbumUuid($albumUuid);
+        $userAuthorization = $this->getUserAuthorization();
+
+        $query    = FindExternalReferencesByAlbumQuery::withAlbumUuid($albumUuid, $userAuthorization->userUuid, $userAuthorization->isAdmin);
         $envelope = $queryBus->dispatch($query);
 
         $results = $envelope->last(HandledStamp::class)->getResult();

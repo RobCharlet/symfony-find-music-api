@@ -3,6 +3,7 @@
 namespace App\Collection\App\CommandHandler;
 
 use App\Collection\App\Command\AddExternalReferenceCommand;
+use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\Domain\ExternalReference;
 use App\Collection\Domain\PlatformEnum;
 use App\Collection\Domain\Repository\AlbumReaderInterface;
@@ -22,6 +23,10 @@ final readonly class AddExternalReferenceCommandHandler
     public function __invoke(AddExternalReferenceCommand $command): void
     {
         $album = $this->albumReader->findByUuid(UuidV7::fromString($command->albumUuid));
+
+        if (!$command->isAdmin && !$command->ownerUuid->equals($album->getOwnerUuid())) {
+            throw new OwnershipForbiddenException();
+        }
 
         $externalReference = new ExternalReference(
             $command->uuid,

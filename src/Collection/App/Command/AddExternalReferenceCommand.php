@@ -8,6 +8,8 @@ final readonly class AddExternalReferenceCommand
 {
     public function __construct(
         public Uuid $uuid,
+        public Uuid $ownerUuid,
+        public bool $isAdmin,
         public ?string $albumUuid,
         public ?string $platform,
         public ?string $externalId,
@@ -17,6 +19,8 @@ final readonly class AddExternalReferenceCommand
 
     public static function withData(
         Uuid $uuid,
+        Uuid $ownerUuid,
+        bool $isAdmin,
         array $payload,
     ): self {
 
@@ -24,6 +28,8 @@ final readonly class AddExternalReferenceCommand
 
         return new self(
             uuid: $uuid,
+            ownerUuid: $ownerUuid,
+            isAdmin: $isAdmin,
             albumUuid: is_string($albumUuid) ? $albumUuid : null,
             platform: $payload['platform'] ?? null,
             externalId: $payload['externalId'] ?? null,

@@ -6,6 +6,7 @@ use App\Collection\App\Command\AddExternalReferenceCommand;
 use App\Collection\App\CommandHandler\AddExternalReferenceCommandHandler;
 use App\Collection\Domain\Album;
 use App\Collection\Domain\Exception\AlbumNotFoundException;
+use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\Domain\ExternalReference;
 use App\Collection\Domain\PlatformEnum;
 use App\Collection\Domain\Repository\AlbumReaderInterface;
@@ -19,7 +20,7 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
     #[Test]
     public function addExternalReferenceCommandHandlerSavesWithCorrectData(): void
     {
-        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $uuid      = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
         $albumUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
         $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
 
@@ -36,13 +37,13 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
         );
 
         $payload = [
-            'albumUuid' => '019c2e97-8e0e-776c-bf55-76a2765e369d',
-            'platform' => 'spotify',
+            'albumUuid'  => '019c2e97-8e0e-776c-bf55-76a2765e369d',
+            'platform'   => 'spotify',
             'externalId' => 'abc123',
-            'metadata' => ['url' => 'https://open.spotify.com/album/abc123'],
+            'metadata'   => ['url' => 'https://open.spotify.com/album/abc123'],
         ];
 
-        $command = AddExternalReferenceCommand::withData($uuid, $payload);
+        $command = AddExternalReferenceCommand::withData($uuid, $ownerUuid, false, $payload);
 
         $mockAlbumReader = $this->createMock(AlbumReaderInterface::class);
         $mockAlbumReader
@@ -68,19 +69,78 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
     }
 
     #[Test]
-    public function addExternalReferenceCommandHandlerWillThrowAlbumNotFoundException(): void
+    public function addExternalReferenceCommandHandlerThrowsWhenNonOwnerAdds(): void
     {
-        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $uuid      = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
         $albumUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+        $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
+        $otherUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369f');
+
+        $album = new Album($albumUuid, $ownerUuid, 'Animal Magic', 'Bonobo', 'Vinyle', 1992, 'Trip Hop', 'Ninja Tune', null);
 
         $payload = [
-            'albumUuid' => '019c2e97-8e0e-776c-bf55-76a2765e369d',
-            'platform' => 'spotify',
+            'albumUuid'  => '019c2e97-8e0e-776c-bf55-76a2765e369d',
+            'platform'   => 'spotify',
             'externalId' => 'abc123',
-            'metadata' => null,
         ];
 
-        $command = AddExternalReferenceCommand::withData($uuid, $payload);
+        $command = AddExternalReferenceCommand::withData($uuid, $otherUuid, false, $payload);
+
+        $mockAlbumReader = $this->createStub(AlbumReaderInterface::class);
+        $mockAlbumReader->method('findByUuid')->willReturn($album);
+
+        $mockWriter = $this->createMock(ExternalReferenceWriterInterface::class);
+        $mockWriter->expects($this->never())->method('save');
+
+        $this->expectException(OwnershipForbiddenException::class);
+
+        $handler = new AddExternalReferenceCommandHandler($mockAlbumReader, $mockWriter);
+        $handler($command);
+    }
+
+    #[Test]
+    public function adminCanAddExternalReferenceToAnyAlbum(): void
+    {
+        $uuid      = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $albumUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+        $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
+        $adminUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369f');
+
+        $album = new Album($albumUuid, $ownerUuid, 'Animal Magic', 'Bonobo', 'Vinyle', 1992, 'Trip Hop', 'Ninja Tune', null);
+
+        $payload = [
+            'albumUuid'  => '019c2e97-8e0e-776c-bf55-76a2765e369d',
+            'platform'   => 'spotify',
+            'externalId' => 'abc123',
+        ];
+
+        $command = AddExternalReferenceCommand::withData($uuid, $adminUuid, true, $payload);
+
+        $mockAlbumReader = $this->createStub(AlbumReaderInterface::class);
+        $mockAlbumReader->method('findByUuid')->willReturn($album);
+
+        $mockWriter = $this->createMock(ExternalReferenceWriterInterface::class);
+        $mockWriter->expects($this->once())->method('save');
+
+        $handler = new AddExternalReferenceCommandHandler($mockAlbumReader, $mockWriter);
+        $handler($command);
+    }
+
+    #[Test]
+    public function addExternalReferenceCommandHandlerWillThrowAlbumNotFoundException(): void
+    {
+        $uuid      = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $albumUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+        $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
+
+        $payload = [
+            'albumUuid'  => '019c2e97-8e0e-776c-bf55-76a2765e369d',
+            'platform'   => 'spotify',
+            'externalId' => 'abc123',
+            'metadata'   => null,
+        ];
+
+        $command = AddExternalReferenceCommand::withData($uuid, $ownerUuid, false, $payload);
 
         $mockAlbumReader = $this->createMock(AlbumReaderInterface::class);
         $mockAlbumReader
@@ -90,9 +150,7 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
             ->willThrowException(new AlbumNotFoundException());
 
         $mockWriter = $this->createMock(ExternalReferenceWriterInterface::class);
-        $mockWriter
-            ->expects($this->never())
-            ->method('save');
+        $mockWriter->expects($this->never())->method('save');
 
         $this->expectException(AlbumNotFoundException::class);
 

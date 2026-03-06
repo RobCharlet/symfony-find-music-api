@@ -2,6 +2,8 @@ App\Collection\App\Command\AddExternalReferenceCommand:
     properties:
         uuid:
             - NotNull: ~
+        ownerUuid:
+            - NotNull: ~
         albumUuid:
             - NotBlank: ~
             - Type:
