@@ -115,6 +115,7 @@ All other `/api/*` routes require a valid JWT (`IS_AUTHENTICATED_FULLY`).
 | `PUT` | `/api/external-references/{uuid}` | Authenticated | Update external reference |
 | `DELETE` | `/api/external-references/{uuid}` | Authenticated | Delete external reference |
 | `GET` | `/api/external-references/album/{albumUuid}` | Authenticated | Find external refs by album |
+| `POST` | `/api/collections/import/discogs` | Authenticated | Import albums from Discogs CSV |
 
 ---
 
