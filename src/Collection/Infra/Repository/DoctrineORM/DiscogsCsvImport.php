@@ -12,6 +12,7 @@ use App\Collection\Domain\Repository\CsvImportInterface;
 use App\Collection\Domain\Repository\ExternalReferenceReaderInterface;
 use App\Collection\Domain\Repository\ExternalReferenceWriterInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV7;
@@ -23,6 +24,7 @@ readonly class DiscogsCsvImport implements CsvImportInterface
         private EntityManagerInterface $entityManager,
         private ExternalReferenceReaderInterface $externalReferenceReader,
         private ExternalReferenceWriterInterface $externalReferenceWriter,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -67,6 +69,10 @@ readonly class DiscogsCsvImport implements CsvImportInterface
                 ];
             }
 
+            $this->logger->warning('import.missing_columns', [
+                'columns' => array_values($missingColumns),
+            ]);
+
             return $results;
         }
 
@@ -77,6 +83,9 @@ readonly class DiscogsCsvImport implements CsvImportInterface
                 CsvEncoder::HEADERS_KEY => $normalizedCsvHeader,
             ]);
         } catch (\UnexpectedValueException $e) {
+            $this->logger->warning('import.decode_error', [
+                'message' => $e->getMessage(),
+            ]);
             $results['errors'][] = ['message' => $e->getMessage()];
 
             return $results;
@@ -98,9 +107,15 @@ readonly class DiscogsCsvImport implements CsvImportInterface
             }
 
             if ([] !== $missingRequiredValues) {
+                $message = sprintf('Missing required value(s): %s.', implode(', ', $missingRequiredValues));
+
+                $this->logger->warning('import.row_error', [
+                    'line'    => $index + 2,
+                    'message' => $message,
+                ]);
                 $results['errors'][] = [
                     'line'    => $index + 2,
-                    'message' => sprintf('Missing required value(s): %s.', implode(', ', $missingRequiredValues)),
+                    'message' => $message,
                 ];
 
                 continue;
@@ -155,8 +170,13 @@ readonly class DiscogsCsvImport implements CsvImportInterface
                     $this->entityManager->rollback();
                 }
 
+                $line = $index + 2;
+                $this->logger->warning('import.row_error', [
+                    'line'    => $line,
+                    'message' => $e->getMessage(),
+                ]);
                 $results['errors'][] = [
-                    'line'    => $index + 2,
+                    'line'    => $line,
                     'message' => $e->getMessage(),
                 ];
             }

@@ -10,6 +10,7 @@ use App\Collection\Domain\Repository\AlbumReaderInterface;
 use App\Collection\Domain\Repository\AlbumWriterInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Uid\UuidV7;
 
 class DeleteAlbumCommandHandlerTest extends TestCase
@@ -47,7 +48,10 @@ class DeleteAlbumCommandHandlerTest extends TestCase
             ->method('delete')
             ->with($existingAlbum);
 
-        $handler = new DeleteAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter);
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $mockLogger->expects($this->once())->method('info');
+
+        $handler = new DeleteAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $mockLogger);
         $handler($command);
     }
 
@@ -73,7 +77,7 @@ class DeleteAlbumCommandHandlerTest extends TestCase
 
         $this->expectException(AlbumNotFoundException::class);
 
-        $handler = new DeleteAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter);
+        $handler = new DeleteAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $this->createMock(LoggerInterface::class));
         $handler($command);
     }
 }

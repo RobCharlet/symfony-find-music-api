@@ -4,6 +4,7 @@ namespace App\Collection\App\CommandHandler;
 
 use App\Collection\App\Command\ImportCsvCommand;
 use App\Collection\Domain\Repository\CsvImportInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -11,6 +12,7 @@ readonly class ImportCsvCommandHandler
 {
     public function __construct(
         private CsvImportInterface $csvImport,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -19,6 +21,18 @@ readonly class ImportCsvCommandHandler
         $filePath = $command->filePath;
         $userUuid = $command->userUuid;
 
-        return $this->csvImport->import($filePath, $userUuid);
+        $this->logger->info('import.started', ['owner' => $userUuid]);
+
+        $results = $this->csvImport->import($filePath, $userUuid);
+
+        $this->logger->info('import.completed', [
+            'owner'       => $userUuid,
+            'total'       => $results['total'],
+            'imported'    => $results['imported'],
+            'skipped'     => $results['skipped'],
+            'error_count' => count($results['errors']),
+        ]);
+
+        return $results;
     }
 }

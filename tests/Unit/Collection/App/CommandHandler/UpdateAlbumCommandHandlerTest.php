@@ -10,6 +10,7 @@ use App\Collection\Domain\Repository\AlbumReaderInterface;
 use App\Collection\Domain\Repository\AlbumWriterInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Uid\UuidV7;
 
 class UpdateAlbumCommandHandlerTest extends TestCase
@@ -66,7 +67,10 @@ class UpdateAlbumCommandHandlerTest extends TestCase
                 $this->assertInstanceOf(\DateTimeImmutable::class, $album->getUpdatedAt());
             });
 
-        $handler = new UpdateAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter);
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $mockLogger->expects($this->once())->method('info');
+
+        $handler = new UpdateAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $mockLogger);
         $handler($command);
     }
 
@@ -102,7 +106,7 @@ class UpdateAlbumCommandHandlerTest extends TestCase
 
         $this->expectException(AlbumNotFoundException::class);
 
-        $handler = new UpdateAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter);
+        $handler = new UpdateAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $this->createMock(LoggerInterface::class));
         $handler($command);
     }
 }

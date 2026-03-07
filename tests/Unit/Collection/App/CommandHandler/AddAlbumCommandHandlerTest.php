@@ -8,6 +8,7 @@ use App\Collection\Domain\Album;
 use App\Collection\Domain\Repository\AlbumWriterInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Uid\UuidV7;
 
 class AddAlbumCommandHandlerTest extends TestCase
@@ -31,6 +32,7 @@ class AddAlbumCommandHandlerTest extends TestCase
         $command = AddAlbumCommand::withData($uuid, $ownerUuid, $payload);
 
         $mockAlbumWriter = $this->createMock(AlbumWriterInterface::class);
+        $mockLogger = $this->createMock(LoggerInterface::class);
 
         $mockAlbumWriter
             ->expects($this->once())
@@ -49,7 +51,11 @@ class AddAlbumCommandHandlerTest extends TestCase
                 $this->assertInstanceOf(\DateTimeImmutable::class, $album->getUpdatedAt());
             });
 
-        $handler = new AddAlbumCommandHandler($mockAlbumWriter);
+        $mockLogger->expects($this->once())
+            ->method('info')
+        ;
+
+        $handler = new AddAlbumCommandHandler($mockAlbumWriter, $mockLogger);
         $handler($command);
     }
 }
