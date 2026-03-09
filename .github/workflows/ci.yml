@@ -21,6 +21,8 @@ jobs:
         run: vendor/bin/phpstan analyse --memory-limit=256M
       - name: Run php-cs-fixer
         run: vendor/bin/php-cs-fixer fix --dry-run --diff
+      - name: Export Nelmio ApiDoc Dump
+        run: php bin/console nelmio:apidoc:dump --no-pretty > /dev/null
 
   unit:
     runs-on: ubuntu-latest

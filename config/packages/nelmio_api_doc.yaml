@@ -1,15 +1,53 @@
 # yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 nelmio_api_doc:
     documentation:
-        info      :
-            title      : Find Music
+        info:
+            title: Find Music
             description: Manage your music library
-            version    : 1.0.0
+            version: 1.0.0
         components:
+            parameters:
+                Page:
+                    name: page
+                    in: query
+                    description: Page number
+                    schema: { type: integer, default: 1, example: 1 }
+                Limit:
+                    name: limit
+                    in: query
+                    description: Resources per page
+                    schema: { type: integer, default: 50, example: 50 }
+                SortByAlbum:
+                    name: sort_by
+                    in: query
+                    description: Sort field
+                    schema:
+                        type: string
+                        nullable: true
+                        enum: [ title, artist, genre, releaseYear, format, label ]
+                        example: title
+                SortOrder:
+                    name: sort_order
+                    in: query
+                    description: Order field
+                    schema:
+                        type: string
+                        nullable: true
+                        enum: [ ASC, DESC ]
+                        example: DESC
+                Genre:
+                    name: genre
+                    in: query
+                    description: Filter by genre
+                    schema:
+                        type: string
+                        nullable: true
+                        example: electronica
+
             securitySchemes:
                 Bearer:
-                    type        : http
-                    scheme      : bearer
+                    type: http
+                    scheme: bearer
                     bearerFormat: JWT
             schemas:
                 ExternalReference:
@@ -28,20 +66,21 @@ nelmio_api_doc:
                         metadata:
                             type: object
                             nullable: true
+
                 Album:
                     type: object
                     properties:
                         uuid:
                             type: string
                             format: uuid
-                        title             :
+                        title:
                             type: string
-                        artist            :
+                        artist:
                             type: string
-                        genre             :
+                        genre:
                             type: string
                             nullable: true
-                        releaseYear       :
+                        releaseYear:
                             type: integer
                             nullable: true
                         format:
@@ -51,19 +90,36 @@ nelmio_api_doc:
                             type: string
                             nullable: true
                         coverUrl:
-                            type    : string
+                            type: string
                             nullable: true
-                        createdAt         :
-                            type  : string
+                        createdAt:
+                            type: string
                             format: date-time
-                        updatedAt         :
-                            type    : string
-                            format  : date-time
+                        updatedAt:
+                            type: string
+                            format: date-time
                             nullable: true
                         externalReferences:
-                            type : array
+                            type: array
                             items:
                                 $ref: '#/components/schemas/ExternalReference'
+
+                Pagination:
+                    type: object
+                    properties:
+                        currentPage:
+                            type: integer
+                        maxPerPage:
+                            type: integer
+                        totalItems:
+                            type: integer
+                        totalPages:
+                            type: integer
+                        hasNextPage:
+                            type: boolean
+                        hasPreviousPage:
+                            type: boolean
+
                 User:
                     type: object
                     properties:
@@ -74,21 +130,21 @@ nelmio_api_doc:
                             type: string
                             format: email
         tags:
-            - name: Auth
-            - name: Users
-            - name: Albums
-            - name: External References
+            -   name: Auth
+            -   name: Users
+            -   name: Albums
+            -   name: External References
         paths:
             /api/login_check:
                 post:
-                    tags: [Auth]
+                    tags: [ Auth ]
                     summary: Get a JWT token
                     requestBody:
                         required: true
                         content:
                             application/json:
                                 schema:
-                                    required: [email, password]
+                                    required: [ email, password ]
                                     properties:
                                         email:
                                             type: string
@@ -108,6 +164,6 @@ nelmio_api_doc:
                             description: Invalid credential
 
 
-    areas        :
+    areas:
         path_patterns:
             - ^/api(?!/doc$) # Accepts routes under /api except /api/doc

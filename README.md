@@ -71,6 +71,7 @@ tests/                       # Automated tests
 - `POST /api/login_check`
 - `POST /api/register`
 - `GET /api/doc.json`
+- `GET /api/doc` (Swagger UI)
 - `GET /api/health`
 
 All other `/api/*` routes require a valid JWT (`IS_AUTHENTICATED_FULLY`).
@@ -137,11 +138,12 @@ symfony php bin/phpunit
 ./vendor/bin/php-cs-fixer fix
 
 # Static analysis
-vendor/bin/phpstan analyse --memory-limit 256M
+./vendor/bin/phpstan analyse --memory-limit 256M
 
 # Lint configuration
 symfony console lint:yaml config/
 symfony console lint:container
+symfony console nelmio:apidoc:dump --no-pretty > /dev/null
 ```
 
 ---

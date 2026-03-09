@@ -4,6 +4,8 @@ namespace App\Collection\UI\Controller;
 
 use App\Collection\App\Command\ImportCsvCommand;
 use App\Shared\UI\Controller\UserAuthorizationTrait;
+use Nelmio\ApiDocBundle\Attribute\Security;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,7 +19,77 @@ class DiscogsImportController extends AbstractController
 {
     use UserAuthorizationTrait;
 
+    #[OA\Tag(name: 'Albums')]
     #[Route('/api/collections/import/discogs', name: 'api_collections_import_discogs', methods: ['POST'])]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: 'multipart/form-data',
+            schema: new OA\Schema(
+                required: ['file'],
+                properties: [
+                    new OA\Property(
+                        property: 'file',
+                        description: 'Discogs CSV file',
+                        type: 'string',
+                        format: 'binary'
+                    ),
+                ],
+                type: 'object'
+            )
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Import report',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'total', type: 'integer', example: 3),
+                new OA\Property(property: 'imported', type: 'integer', example: 2),
+                new OA\Property(property: 'skipped', type: 'integer', example: 1),
+                new OA\Property(
+                    property: 'errors',
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'line', type: 'integer', example: 12, nullable: true),
+                            new OA\Property(property: 'message', type: 'string', example: 'Missing required value(s): title.'),
+                        ],
+                        type: 'object'
+                    )
+                ),
+            ],
+            type: 'object'
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Bad request (invalid file or import failure report)',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'detail', type: 'string', example: 'Invalid file.', nullable: true),
+                new OA\Property(property: 'total', type: 'integer', nullable: true),
+                new OA\Property(property: 'imported', type: 'integer', nullable: true),
+                new OA\Property(property: 'skipped', type: 'integer', nullable: true),
+                new OA\Property(
+                    property: 'errors',
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'line', type: 'integer', nullable: true),
+                            new OA\Property(property: 'message', type: 'string'),
+                        ],
+                        type: 'object'
+                    ),
+                    nullable: true
+                ),
+            ],
+            type: 'object'
+        )
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 422, description: 'Validation error')]
+    #[Security(name: 'Bearer')]
     public function import(
         MessageBusInterface $messageBus,
         Request $request,

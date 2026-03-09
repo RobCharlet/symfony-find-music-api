@@ -7,12 +7,9 @@ namespace App\Tests\Integration\User\UI\Controller;
 use App\Factory\SecurityUserFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Zenstruck\Foundry\Test\Factories;
 
 class RegistrationControllerTest extends WebTestCase
 {
-    use Factories;
-
     #[Test]
     public function registerUserSuccessfully()
     {

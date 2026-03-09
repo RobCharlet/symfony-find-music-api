@@ -50,16 +50,22 @@ class ExternalReferenceController extends AbstractController
         ),
     ])]
     #[OA\Response(response: 400, description: 'Invalid JSON')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 409, description: 'Conflict')]
     #[OA\Response(response: 422, description: 'Validation error')]
     #[Security(name: 'Bearer')]
     public function create(MessageBusInterface $commandBus, Request $request): JsonResponse
     {
-        $uuid              = UuidV7::v7();
-        $payload           = $request->toArray();
+        $uuid = UuidV7::v7();
+        $payload = $request->toArray();
         $userAuthorization = $this->getUserAuthorization();
 
-        $command = AddExternalReferenceCommand::withData($uuid, $userAuthorization->userUuid, $userAuthorization->isAdmin, $payload);
+        $command = AddExternalReferenceCommand::withData(
+            $uuid,
+            $userAuthorization->userUuid,
+            $userAuthorization->isAdmin,
+            $payload
+        );
         $commandBus->dispatch($command);
 
         return new JsonResponse(
@@ -70,9 +76,17 @@ class ExternalReferenceController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'external_reference_find', requirements: ['_format' => 'json'], methods: ['GET'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'External Reference UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\Response(response: 200, description: 'Returns the external reference', content: new OA\JsonContent(
         ref: '#/components/schemas/ExternalReference'
     ))]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
     #[Security(name: 'Bearer')]
@@ -83,7 +97,7 @@ class ExternalReferenceController extends AbstractController
     ): JsonResponse {
         $userAuthorization = $this->getUserAuthorization();
 
-        $query    = FindExternalReferenceQuery::withUuid(
+        $query = FindExternalReferenceQuery::withUuid(
             $uuid,
             $userAuthorization->userUuid,
             $userAuthorization->isAdmin
@@ -104,10 +118,29 @@ class ExternalReferenceController extends AbstractController
         requirements: ['_format' => 'json'],
         methods: ['GET']
     )]
-    #[OA\Response(response: 200, description: 'Returns external references of an album', content: new OA\JsonContent(
-        type: 'array',
-        items: new OA\Items(ref: '#/components/schemas/ExternalReference')
-    ))]
+    #[OA\Parameter(
+        name: 'albumUuid',
+        description: 'Album UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns external references of an album',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/ExternalReference')
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden')]
+    #[OA\Response(response: 404, description: 'Album not found')]
     #[Security(name: 'Bearer')]
     public function findByAlbum(
         ExternalReferenceNormalizer $normalizer,
@@ -116,7 +149,11 @@ class ExternalReferenceController extends AbstractController
     ): JsonResponse {
         $userAuthorization = $this->getUserAuthorization();
 
-        $query    = FindExternalReferencesByAlbumQuery::withAlbumUuid($albumUuid, $userAuthorization->userUuid, $userAuthorization->isAdmin);
+        $query = FindExternalReferencesByAlbumQuery::withAlbumUuid(
+            $albumUuid,
+            $userAuthorization->userUuid,
+            $userAuthorization->isAdmin
+        );
         $envelope = $queryBus->dispatch($query);
 
         $results = $envelope->last(HandledStamp::class)->getResult();
@@ -134,6 +171,13 @@ class ExternalReferenceController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'external_reference_update', requirements: ['_format' => 'json'], methods: ['PUT'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'External Reference UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
@@ -146,6 +190,7 @@ class ExternalReferenceController extends AbstractController
     )]
     #[OA\Response(response: 204, description: 'External reference updated')]
     #[OA\Response(response: 400, description: 'Invalid JSON')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
     #[OA\Response(response: 422, description: 'Validation error')]
@@ -171,7 +216,15 @@ class ExternalReferenceController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'external_reference_delete', requirements: ['_format' => 'json'], methods: ['DELETE'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'External Reference UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\Response(response: 204, description: 'External reference deleted')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
     #[Security(name: 'Bearer')]

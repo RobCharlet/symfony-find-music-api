@@ -11,11 +11,9 @@ use App\User\Infra\Security\SecurityUser;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\UuidV7;
-use Zenstruck\Foundry\Test\Factories;
 
 abstract class ControllerTestCase extends WebTestCase
 {
-    use Factories;
     use JWTAuthenticatedClientTrait;
 
     protected function createAuthenticatedClientWithUser(array $roles = ['ROLE_USER'], string $email = 'customUser@test.com'): array

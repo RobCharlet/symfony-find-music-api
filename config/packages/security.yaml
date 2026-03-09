@@ -59,7 +59,7 @@ security:
         # Public endpoints
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS } # Swagger UI — endpoints are individually protected
         - { path: ^/api/health, roles: PUBLIC_ACCESS }
 
         # Admin-only endpoints

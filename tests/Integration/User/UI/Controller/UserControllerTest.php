@@ -9,11 +9,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\UuidV7;
-use Zenstruck\Foundry\Test\Factories;
 
 class UserControllerTest extends WebTestCase
 {
-    use Factories;
     use JWTAuthenticatedClientTrait;
 
     private KernelBrowser $client;

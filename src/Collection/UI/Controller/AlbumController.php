@@ -53,6 +53,7 @@ class AlbumController extends AbstractController
         ),
     ])]
     #[OA\Response(response: 400, description: 'Invalid JSON')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 409, description: 'Conflict')]
     #[OA\Response(response: 422, description: 'Validation error')]
     #[Security(name: 'Bearer')]
@@ -76,7 +77,15 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'album_delete', requirements: ['_format' => 'json'], methods: ['DELETE'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'Album UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\Response(response: 204, description: 'Album deleted')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Album not found')]
     #[Security(name: 'Bearer')]
@@ -96,9 +105,17 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'album_find', requirements: ['_format' => 'json'], methods: ['GET'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'Album UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\Response(response: 200, description: 'Returns the album', content: new OA\JsonContent(
         ref: '#/components/schemas/Album'
     ))]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Album not found')]
     #[Security(name: 'Bearer')]
@@ -125,11 +142,18 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/owner/{uuid}', name: 'album_owner_find', requirements: ['_format' => 'json'], methods: ['GET'])]
-    #[OA\Parameter(name: 'page', in: 'query', schema: new OA\Schema(type: 'integer', default: 1))]
-    #[OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer', default: 50))]
-    #[OA\Parameter(name: 'sort_by', in: 'query', schema: new OA\Schema(type: 'string', nullable: true))]
-    #[OA\Parameter(name: 'sort_order', in: 'query', schema: new OA\Schema(type: 'string', enum: ['ASC', 'DESC'], nullable: true))]
-    #[OA\Parameter(name: 'genre', in: 'query', schema: new OA\Schema(type: 'string', nullable: true))]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'User UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Parameter(ref: '#/components/parameters/Page')]
+    #[OA\Parameter(ref: '#/components/parameters/Limit')]
+    #[OA\Parameter(ref: '#/components/parameters/SortByAlbum')]
+    #[OA\Parameter(ref: '#/components/parameters/SortOrder')]
+    #[OA\Parameter(ref: '#/components/parameters/Genre')]
     #[OA\Response(
         response: 200,
         description: 'Returns albums of an owner',
@@ -142,19 +166,12 @@ class AlbumController extends AbstractController
                 ),
                 new OA\Property(
                     property: 'pagination',
-                    properties: [
-                        new OA\Property(property: 'currentPage', type: 'integer'),
-                        new OA\Property(property: 'maxPerPage', type: 'integer'),
-                        new OA\Property(property: 'totalItems', type: 'integer'),
-                        new OA\Property(property: 'totalPages', type: 'integer'),
-                        new OA\Property(property: 'hasNextPage', type: 'boolean'),
-                        new OA\Property(property: 'hasPreviousPage', type: 'boolean'),
-                    ],
-                    type: 'object'
+                    ref: '#/components/schemas/Pagination',
                 ),
             ]
         )
     )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[Security(name: 'Bearer')]
     public function findOwnerAlbums(
@@ -208,6 +225,13 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'album_update', requirements: ['_format' => 'json'], methods: ['PUT'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'Album UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
@@ -224,6 +248,7 @@ class AlbumController extends AbstractController
     )]
     #[OA\Response(response: 204, description: 'Album updated')]
     #[OA\Response(response: 400, description: 'Invalid JSON')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Album not found')]
     #[OA\Response(response: 422, description: 'Validation error')]

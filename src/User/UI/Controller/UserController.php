@@ -70,6 +70,8 @@ class UserController extends AbstractController
         ]
     )]
     #[OA\Response(response: 400, description: 'Invalid JSON')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Admin only')]
     #[OA\Response(response: 409, description: 'Conflict')]
     #[OA\Response(response: 422, description: 'Validation error')]
     public function createUser(
@@ -94,9 +96,17 @@ class UserController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'user_find', requirements: ['_format' => 'json'], methods: ['GET'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'User UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\Response(response: 200, description: 'Returns the user', content: new OA\JsonContent(
         ref: '#/components/schemas/User'
     ))]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
     public function findUser(
@@ -106,7 +116,11 @@ class UserController extends AbstractController
     ): JsonResponse {
         $userAuthorization = $this->getUserAuthorization();
 
-        $query    = FindUserQuery::withUuid($uuid, $userAuthorization->userUuid, $userAuthorization->isAdmin);
+        $query    = FindUserQuery::withUuid(
+            $uuid,
+            $userAuthorization->userUuid,
+            $userAuthorization->isAdmin
+        );
         $envelope = $bus->dispatch($query);
 
         $user = $envelope->last(HandledStamp::class)->getResult();
@@ -118,6 +132,13 @@ class UserController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'user_update', requirements: ['_format' => 'json'], methods: ['PUT'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'User UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
@@ -130,6 +151,7 @@ class UserController extends AbstractController
     )]
     #[OA\Response(response: 204, description: 'User updated')]
     #[OA\Response(response: 400, description: 'Invalid JSON')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden or invalid current password')]
     #[OA\Response(response: 404, description: 'Not found')]
     #[OA\Response(response: 422, description: 'Validation error')]
@@ -161,7 +183,15 @@ class UserController extends AbstractController
     }
 
     #[Route('/{uuid}', name: 'user_delete', requirements: ['_format' => 'json'], methods: ['DELETE'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'User UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
     #[OA\Response(response: 204, description: 'User deleted')]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
     public function deleteUser(

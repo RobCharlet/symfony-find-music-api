@@ -77,7 +77,7 @@ class DeleteAlbumCommandHandlerTest extends TestCase
 
         $this->expectException(AlbumNotFoundException::class);
 
-        $handler = new DeleteAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $this->createMock(LoggerInterface::class));
+        $handler = new DeleteAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $this->createStub(LoggerInterface::class));
         $handler($command);
     }
 }

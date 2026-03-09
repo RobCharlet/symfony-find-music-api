@@ -98,7 +98,7 @@ final class AlbumFactory extends PersistentObjectFactory
             'updatedAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
             'genre' => self::faker()->randomElement(self::GENRES),
             'label' => self::faker()->text(),
-            'coverUrl' => self::faker()->imageUrl(),
+            'coverUrl' => 'https://example.com/covers/'.self::faker()->uuid().'.jpg',
         ];
     }
 

@@ -106,7 +106,7 @@ class UpdateAlbumCommandHandlerTest extends TestCase
 
         $this->expectException(AlbumNotFoundException::class);
 
-        $handler = new UpdateAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $this->createMock(LoggerInterface::class));
+        $handler = new UpdateAlbumCommandHandler($mockAlbumReader, $mockAlbumWriter, $this->createStub(LoggerInterface::class));
         $handler($command);
     }
 }
