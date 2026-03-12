@@ -3,6 +3,8 @@
 namespace App\Tests\Unit\User\UI\EventListener;
 
 use App\Shared\UI\EventListener\GlobalExceptionListener;
+use App\User\Domain\Exception\InvalidCurrentPasswordException;
+use App\User\Domain\Exception\UserAccessForbiddenException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\UI\EventListener\ExceptionListener;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -47,6 +49,46 @@ class ExceptionListenerTest extends TestCase
         $data = json_decode($response->getContent(), true);
         $this->assertSame('not_found', $data['type']);
         $this->assertSame('User not found.', $data['detail']);
+    }
+
+    #[Test]
+    public function userAccessForbiddenReturnsJson403(): void
+    {
+        $nested = new UserAccessForbiddenException();
+        $exception = new HandlerFailedException(
+            new \Symfony\Component\Messenger\Envelope(new \stdClass()),
+            [$nested],
+        );
+
+        $event = $this->createEvent($exception);
+        $this->listener->onExceptionEvent($event);
+
+        $response = $event->getResponse();
+        $this->assertSame(403, $response->getStatusCode());
+
+        $data = json_decode($response->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
+        $this->assertSame('Forbidden.', $data['detail']);
+    }
+
+    #[Test]
+    public function invalidCurrentPasswordReturnsJson403(): void
+    {
+        $nested = new InvalidCurrentPasswordException();
+        $exception = new HandlerFailedException(
+            new \Symfony\Component\Messenger\Envelope(new \stdClass()),
+            [$nested],
+        );
+
+        $event = $this->createEvent($exception);
+        $this->listener->onExceptionEvent($event);
+
+        $response = $event->getResponse();
+        $this->assertSame(403, $response->getStatusCode());
+
+        $data = json_decode($response->getContent(), true);
+        $this->assertSame('invalid_current_password', $data['type']);
+        $this->assertSame('Invalid current user\'s password.', $data['detail']);
     }
 
     #[Test]
