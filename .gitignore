@@ -20,6 +20,7 @@
 
 ###> claude-code ###
 .claude/
+.agents/
 ROADMAP.md
 ROADMAP_DONE.md
 CLAUDE.md
@@ -43,3 +44,9 @@ phpstan.neon
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
+
+###> docker secrets ###
+/secrets/*
+!/secrets/.gitkeep
+###< docker secrets ###
+/skills-lock.json

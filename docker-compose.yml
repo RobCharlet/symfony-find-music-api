@@ -1,0 +1,103 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: find-music-app:${APP_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      APP_SECRET: ${APP_SECRET}
+      APP_SHARE_DIR: ${APP_SHARE_DIR:-var/share}
+      DEFAULT_URI: ${DEFAULT_URI}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
+      DATABASE_URL: ${DATABASE_URL}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
+      JWT_SECRET_KEY: /run/secrets/jwt_private_key
+      JWT_PUBLIC_KEY: /run/secrets/jwt_public_key
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+    depends_on:
+      db:
+        condition: service_healthy
+    secrets:
+      - source: jwt_private_key
+        target: jwt_private_key
+      - source: jwt_public_key
+        target: jwt_public_key
+    networks:
+      - frontend
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    image: find-music-nginx:${NGINX_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${NGINX_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - frontend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  db:
+    image: postgres:${POSTGRES_VERSION:-16}-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-find_music}
+      POSTGRES_USER: ${POSTGRES_USER:-find_music}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d ${POSTGRES_DB:-find_music} -U ${POSTGRES_USER:-find_music}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+secrets:
+  jwt_private_key:
+    file: ${JWT_PRIVATE_KEY_FILE:-./config/jwt/private.pem}
+  jwt_public_key:
+    file: ${JWT_PUBLIC_KEY_FILE:-./config/jwt/public.pem}
+  db_password:
+    file: ${DB_PASSWORD_FILE:-./secrets/db_password}
+
+volumes:
+  db_data:
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
