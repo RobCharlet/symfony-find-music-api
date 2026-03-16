@@ -24,6 +24,11 @@ doctrine:
                 type     : xml
                 dir      : '%kernel.project_dir%/src/User/Infra/Resources/config/doctrine-mapping'
                 prefix   : 'App\User\Infra\Security'
+            RefreshToken:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/src/User/Infra/Entity'
+                prefix: 'App\User\Infra\Entity'
         controller_resolver:
             auto_mapping: false
 

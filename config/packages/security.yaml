@@ -34,6 +34,8 @@ security:
             entry_point: jwt
             provider: app_user_provider
             jwt: ~
+            refresh_jwt:
+                check_path: /api/token/refresh
             stateless: true
             lazy: true
             access_denied_handler: App\Shared\UI\Security\ApiAccessDeniedHandler
@@ -58,6 +60,7 @@ security:
     access_control:
         # Public endpoints
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc, roles: PUBLIC_ACCESS } # Swagger UI — endpoints are individually protected
         - { path: ^/api/health, roles: PUBLIC_ACCESS }
