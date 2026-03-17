@@ -2,12 +2,13 @@
 
 namespace App\User\Infra\Security;
 
+use App\Shared\Domain\UuidAwareUserInterface;
 use App\User\Domain\User;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
 
-class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface
+class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface, UuidAwareUserInterface
 {
     public function __construct(
         private Uuid $uuid,

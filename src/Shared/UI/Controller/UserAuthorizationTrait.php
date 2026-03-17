@@ -2,8 +2,8 @@
 
 namespace App\Shared\UI\Controller;
 
+use App\Shared\Domain\UuidAwareUserInterface;
 use App\Shared\UI\UserAuthorization;
-use App\User\Infra\Security\SecurityUser;
 
 trait UserAuthorizationTrait
 {
@@ -11,7 +11,7 @@ trait UserAuthorizationTrait
     {
         $securityUser = $this->getUser();
 
-        if (!$securityUser instanceof SecurityUser) {
+        if (!$securityUser instanceof UuidAwareUserInterface) {
             throw $this->createAccessDeniedException();
         }
 
