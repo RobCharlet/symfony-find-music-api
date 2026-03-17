@@ -71,7 +71,9 @@ class ExternalReferenceController extends AbstractController
         return new JsonResponse(
             '',
             Response::HTTP_CREATED,
-            ['Location' => 'api/external-references/'.$command->uuid->toString()]
+            ['Location' => $this->generateUrl('external_reference_find', [
+                'uuid' => $command->uuid->toString(),
+            ])]
         );
     }
 

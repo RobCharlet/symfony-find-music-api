@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-readonly class ImportCsvCommandHandler
+final readonly class ImportCsvCommandHandler
 {
     public function __construct(
         private CsvImportInterface $csvImport,

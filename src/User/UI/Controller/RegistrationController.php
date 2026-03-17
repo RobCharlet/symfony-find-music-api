@@ -54,7 +54,9 @@ class RegistrationController extends AbstractController
         $bus->dispatch($command);
 
         return $this->json('', Response::HTTP_CREATED, [
-            'Location' => '/api/users/'.$command->uuid->toString(),
+            'Location' => $this->generateUrl('user_find', [
+                'uuid' => $command->uuid->toString(),
+            ]),
         ]);
     }
 }

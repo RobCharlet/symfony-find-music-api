@@ -110,6 +110,25 @@ class UserControllerTest extends WebTestCase
     }
 
     #[Test]
+    public function adminCreateUserReturnsLocationHeader()
+    {
+        $this->client->request('POST', '/api/users', content: json_encode([
+            'email'    => 'location-test@example.com',
+            'password' => 'securepass123',
+            'roles'    => ['ROLE_USER'],
+        ]));
+
+        $this->assertResponseStatusCodeSame(201);
+
+        $location = $this->client->getResponse()->headers->get('Location');
+        $this->assertNotNull($location);
+        $this->assertMatchesRegularExpression(
+            '#/api/users/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}#',
+            $location
+        );
+    }
+
+    #[Test]
     public function updateUser()
     {
         $uuid = '019c1ec8-961c-7802-90e4-b8163542a2cd';

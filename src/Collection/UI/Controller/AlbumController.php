@@ -73,7 +73,7 @@ class AlbumController extends AbstractController
         return new JsonResponse(
             '',
             Response::HTTP_CREATED,
-            ['Location' => 'api/albums/'.$command->uuid->toString()]
+            ['Location' => $this->generateUrl('album_find', ['uuid' => $command->uuid->toString()])]
         );
     }
 

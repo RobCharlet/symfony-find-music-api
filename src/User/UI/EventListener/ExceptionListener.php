@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 
-class ExceptionListener
+final class ExceptionListener
 {
     #[AsEventListener]
     public function onExceptionEvent(ExceptionEvent $event): void
