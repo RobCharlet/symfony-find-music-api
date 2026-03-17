@@ -8,6 +8,7 @@ use App\Collection\App\Command\UpdateAlbumCommand;
 use App\Collection\App\Query\FindAlbumQuery;
 use App\Collection\App\Query\FindAlbumsByOwnerQuery;
 use App\Collection\UI\RestNormalizer\AlbumNormalizer;
+use App\Shared\App\DTO\PaginationDTO;
 use App\Shared\UI\Controller\UserAuthorizationTrait;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
@@ -211,14 +212,7 @@ class AlbumController extends AbstractController
         return new JsonResponse(
             [
                 'data' => $albums,
-                'pagination' => [
-                    'currentPage' => $paginator->getCurrentPage(),
-                    'maxPerPage' => $paginator->getMaxPerPage(),
-                    'totalItems' => $paginator->getTotalItems(),
-                    'totalPages' => $paginator->getTotalPages(),
-                    'hasNextPage' => $paginator->hasNextPage(),
-                    'hasPreviousPage' => $paginator->hasPreviousPage(),
-                ],
+                'pagination' => PaginationDTO::fromPaginator($paginator),
             ],
             Response::HTTP_OK
         );

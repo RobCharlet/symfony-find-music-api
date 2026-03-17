@@ -5,6 +5,7 @@ namespace App\Collection\UI\Controller;
 use App\Collection\App\Query\FindExternalReferencesQuery;
 use App\Collection\Domain\PaginatorInterface;
 use App\Collection\UI\RestNormalizer\ExternalReferenceNormalizer;
+use App\Shared\App\DTO\PaginationDTO;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -72,14 +73,7 @@ class AdminExternalReferenceController extends AbstractController
         return new JsonResponse(
             [
                 'data' => $externalReferences,
-                'pagination' => [
-                    'currentPage' => $paginator->getCurrentPage(),
-                    'maxPerPage' => $paginator->getMaxPerPage(),
-                    'totalItems' => $paginator->getTotalItems(),
-                    'totalPages' => $paginator->getTotalPages(),
-                    'hasNextPage' => $paginator->hasNextPage(),
-                    'hasPreviousPage' => $paginator->hasPreviousPage(),
-                ],
+                'pagination' => PaginationDTO::fromPaginator($paginator),
             ],
             Response::HTTP_OK
         );
