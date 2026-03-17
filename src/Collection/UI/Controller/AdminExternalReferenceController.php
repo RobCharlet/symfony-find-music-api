@@ -3,7 +3,7 @@
 namespace App\Collection\UI\Controller;
 
 use App\Collection\App\Query\FindExternalReferencesQuery;
-use App\Collection\Infra\Paginator;
+use App\Collection\Domain\PaginatorInterface;
 use App\Collection\UI\RestNormalizer\ExternalReferenceNormalizer;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
@@ -60,7 +60,7 @@ class AdminExternalReferenceController extends AbstractController
         $query = FindExternalReferencesQuery::withPageAndLimit($page, $limit);
         $envelope = $queryBus->dispatch($query);
 
-        /** @var Paginator $paginator */
+        /** @var PaginatorInterface $paginator */
         $paginator = $envelope->last(HandledStamp::class)->getResult();
 
         $externalReferences = [];
