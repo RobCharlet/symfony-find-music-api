@@ -7,7 +7,7 @@ use Symfony\Component\Uid\Uuid;
 final class User
 {
     public function __construct(
-        private Uuid $uuid,
+        private readonly Uuid $uuid,
         private string $email,
         private string $password,
         private array $roles = [],

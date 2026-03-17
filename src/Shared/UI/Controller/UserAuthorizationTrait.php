@@ -15,7 +15,7 @@ trait UserAuthorizationTrait
             throw $this->createAccessDeniedException();
         }
 
-        $userUuid = $securityUser->toDomain()->getUuid();
+        $userUuid = $securityUser->getUuid();
         $isAdmin  = $this->isGranted('ROLE_ADMIN');
 
         return new UserAuthorization($userUuid, $isAdmin);
