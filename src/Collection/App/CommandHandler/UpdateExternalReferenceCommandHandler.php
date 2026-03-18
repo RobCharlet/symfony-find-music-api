@@ -13,15 +13,15 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class UpdateExternalReferenceCommandHandler
 {
     public function __construct(
-        private ExternalReferenceReaderInterface $reader,
-        private ExternalReferenceWriterInterface $writer,
+        private ExternalReferenceReaderInterface $externalReferenceReader,
+        private ExternalReferenceWriterInterface $externalReferenceWriter,
     ) {
     }
 
     public function __invoke(UpdateExternalReferenceCommand $command): void
     {
         $uuid = $command->uuid;
-        $externalReference = $this->reader->findByUuid($uuid);
+        $externalReference = $this->externalReferenceReader->findByUuid($uuid);
 
         if (!$command->isAdmin
             && !$command->ownerUuid->equals($externalReference->getAlbum()->getOwnerUuid())) {
@@ -34,6 +34,6 @@ final readonly class UpdateExternalReferenceCommandHandler
             $command->metadata ?? null
         );
 
-        $this->writer->save($externalReference);
+        $this->externalReferenceWriter->save($externalReference);
     }
 }

@@ -12,21 +12,21 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class DeleteExternalReferenceCommandHandler
 {
     public function __construct(
-        private ExternalReferenceReaderInterface $reader,
-        private ExternalReferenceWriterInterface $writer,
+        private ExternalReferenceReaderInterface $externalReferenceReader,
+        private ExternalReferenceWriterInterface $externalReferenceWriter,
     ) {
     }
 
     public function __invoke(DeleteExternalReferenceCommand $command): void
     {
         $uuid              = $command->uuid;
-        $externalReference = $this->reader->findByUuid($uuid);
+        $externalReference = $this->externalReferenceReader->findByUuid($uuid);
 
         if (!$command->isAdmin
             && !$command->ownerUuid->equals($externalReference->getAlbum()->getOwnerUuid())) {
             throw new OwnershipForbiddenException();
         }
 
-        $this->writer->delete($externalReference);
+        $this->externalReferenceWriter->delete($externalReference);
     }
 }

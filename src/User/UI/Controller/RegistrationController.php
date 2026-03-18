@@ -40,18 +40,18 @@ class RegistrationController extends AbstractController
     #[OA\Response(response: 400, description: 'Invalid JSON')]
     #[OA\Response(response: 409, description: 'Conflict')]
     #[OA\Response(response: 422, description: 'Validation error')]
-    public function register(MessageBusInterface $bus, Request $request): JsonResponse
+    public function register(MessageBusInterface $commandBus, Request $request): JsonResponse
     {
         $uuid = UuidV7::v7();
-        $data = $request->toArray();
+        $payload = $request->toArray();
 
         $command = CreateUserCommand::forSelfRegistration(
             $uuid,
-            $data['email'],
-            $data['password'],
+            $payload['email'],
+            $payload['password'],
         );
 
-        $bus->dispatch($command);
+        $commandBus->dispatch($command);
 
         return $this->json('', Response::HTTP_CREATED, [
             'Location' => $this->generateUrl('user_find', [

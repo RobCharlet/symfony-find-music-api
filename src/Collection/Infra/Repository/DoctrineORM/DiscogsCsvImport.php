@@ -91,7 +91,7 @@ readonly class DiscogsCsvImport implements CsvImportInterface
             return $results;
         }
 
-        foreach ($content as $index => $collection) {
+        foreach ($content as $index => $csvRow) {
             $platform = PlatformEnum::Discogs;
             ++$results['total'];
 
@@ -99,7 +99,7 @@ readonly class DiscogsCsvImport implements CsvImportInterface
             $missingRequiredValues = [];
 
             foreach ($requiredFields as $field) {
-                $value = $collection[$field] ?? null;
+                $value = $csvRow[$field] ?? null;
 
                 if (null === $value || '' === trim((string) $value)) {
                     $missingRequiredValues[] = $field;
@@ -125,9 +125,9 @@ readonly class DiscogsCsvImport implements CsvImportInterface
                 $albumUuid             = UuidV7::v7();
                 $externalReferenceUuid = UuidV7::v7();
 
-                $albumDTO             = DiscogsAlbumImport::withData($collection);
+                $albumDTO             = DiscogsAlbumImport::withData($csvRow);
                 $externalReferenceDTO = DiscogsExternalReferenceImport::withData(
-                    $collection
+                    $csvRow
                 );
 
                 $existingAlbum = $this->externalReferenceReader->existsByOwnerPlatformExternalId(

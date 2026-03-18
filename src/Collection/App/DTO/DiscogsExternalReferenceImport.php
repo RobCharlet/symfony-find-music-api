@@ -11,18 +11,18 @@ class DiscogsExternalReferenceImport
     }
 
     public static function withData(
-        array $collection,
+        array $csvRow,
     ): self {
         return new self(
-            externalId: $collection['release_id'] ?? null,
+            externalId: $csvRow['release_id'] ?? null,
             metadata: [
-                'catalog#'                    => $collection['catalog#'] ?? null,
-                'rating'                      => $collection['rating'] ?? null,
-                'collectionFolder'            => $collection['collectionFolder'] ?? null,
-                'date_added'                  => $collection['date_added'] ?? null,
-                'collection_media_condition'  => $collection['collection_media_condition'] ?? null,
-                'collection_sleeve_condition' => $collection['collection_sleeve_condition'] ?? null,
-                'collection_notes'            => $collection['collection_notes'] ?? null,
+                'catalog#'                    => $csvRow['catalog#'] ?? null,
+                'rating'                      => $csvRow['rating'] ?? null,
+                'collectionFolder'            => $csvRow['collectionfolder'] ?? null,
+                'date_added'                  => $csvRow['date_added'] ?? null,
+                'collection_media_condition'  => $csvRow['collection_media_condition'] ?? null,
+                'collection_sleeve_condition' => $csvRow['collection_sleeve_condition'] ?? null,
+                'collection_notes'            => $csvRow['collection_notes'] ?? null,
             ],
         );
     }

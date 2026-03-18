@@ -158,11 +158,11 @@ class ExternalReferenceController extends AbstractController
         );
         $envelope = $queryBus->dispatch($query);
 
-        $results = $envelope->last(HandledStamp::class)->getResult();
+        $externalReferenceList = $envelope->last(HandledStamp::class)->getResult();
 
         $externalReferences = [];
 
-        foreach ($results as $externalReference) {
+        foreach ($externalReferenceList as $externalReference) {
             $externalReferences[] = $normalizer->normalize($externalReference);
         }
 

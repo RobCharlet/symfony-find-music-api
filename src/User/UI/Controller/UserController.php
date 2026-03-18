@@ -42,7 +42,7 @@ class UserController extends AbstractController
     ): JsonResponse {
         /** @var SecurityUser $securityUser */
         $securityUser = $this->getUser();
-        $user         = $securityUser->toDomain();
+        $user = $securityUser->toDomain();
 
         return $this->json($normalizer->normalize($user), Response::HTTP_OK);
     }
@@ -75,20 +75,20 @@ class UserController extends AbstractController
     #[OA\Response(response: 409, description: 'Conflict')]
     #[OA\Response(response: 422, description: 'Validation error')]
     public function createUser(
-        MessageBusInterface $bus,
+        MessageBusInterface $commandBus,
         Request $request,
     ): JsonResponse {
         $uuid = UuidV7::v7();
-        $data = $request->toArray();
+        $payload = $request->toArray();
 
         $command = CreateUserCommand::forAdminCreation(
             $uuid,
-            $data['email'],
-            $data['password'],
-            $data['roles'] ?? ['ROLE_USER'],
+            $payload['email'],
+            $payload['password'],
+            $payload['roles'] ?? ['ROLE_USER'],
         );
 
-        $bus->dispatch($command);
+        $commandBus->dispatch($command);
 
         return $this->json('', Response::HTTP_CREATED, [
             'Location' => $this->generateUrl('user_find', [
@@ -114,16 +114,16 @@ class UserController extends AbstractController
     public function findUser(
         Uuid $uuid,
         UserNormalizer $normalizer,
-        MessageBusInterface $bus,
+        MessageBusInterface $queryBus,
     ): JsonResponse {
         $userAuthorization = $this->getUserAuthorization();
 
-        $query    = FindUserQuery::withUuid(
+        $query = FindUserQuery::withUuid(
             $uuid,
             $userAuthorization->userUuid,
             $userAuthorization->isAdmin
         );
-        $envelope = $bus->dispatch($query);
+        $envelope = $queryBus->dispatch($query);
 
         $user = $envelope->last(HandledStamp::class)->getResult();
 
@@ -158,25 +158,25 @@ class UserController extends AbstractController
     #[OA\Response(response: 404, description: 'Not found')]
     #[OA\Response(response: 422, description: 'Validation error')]
     public function updateUser(
-        MessageBusInterface $bus,
+        MessageBusInterface $commandBus,
         Request $request,
         Uuid $uuid,
     ): JsonResponse {
-        $data = $request->toArray();
+        $payload = $request->toArray();
 
         $userAuthorization = $this->getUserAuthorization();
 
         $command = UpdateUserCommand::withData(
             $uuid,
             $userAuthorization->userUuid,
-            $data['email'] ?? null,
-            $data['password'] ?? null,
-            $data['currentPassword'] ?? null,
-            $data['roles'] ?? null,
+            $payload['email'] ?? null,
+            $payload['password'] ?? null,
+            $payload['currentPassword'] ?? null,
+            $payload['roles'] ?? null,
             $userAuthorization->isAdmin
         );
 
-        $bus->dispatch($command);
+        $commandBus->dispatch($command);
 
         return $this->json(
             '',
@@ -197,14 +197,14 @@ class UserController extends AbstractController
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
     public function deleteUser(
-        MessageBusInterface $bus,
+        MessageBusInterface $commandBus,
         Uuid $uuid,
     ): JsonResponse {
         $userAuthorization = $this->getUserAuthorization();
 
         $command = DeleteUserCommand::withUuid($uuid, $userAuthorization->userUuid, $userAuthorization->isAdmin);
 
-        $bus->dispatch($command);
+        $commandBus->dispatch($command);
 
         return $this->json(
             '',

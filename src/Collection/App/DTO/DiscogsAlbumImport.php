@@ -13,9 +13,9 @@ class DiscogsAlbumImport
     ) {
     }
 
-    public static function withData(array $collection): self
+    public static function withData(array $csvRow): self
     {
-        $released = trim((string) ($collection['released'] ?? ''));
+        $released = trim((string) ($csvRow['released'] ?? ''));
         $releaseYear = ctype_digit($released) ? (int) $released : null;
 
         if (null !== $releaseYear && ($releaseYear < 1900 || $releaseYear > 2100)) {
@@ -23,11 +23,11 @@ class DiscogsAlbumImport
         }
 
         return new self(
-            title: $collection['title'] ?? null,
-            artist: $collection['artist'] ?? null,
+            title: $csvRow['title'] ?? null,
+            artist: $csvRow['artist'] ?? null,
             releaseYear: $releaseYear,
-            format: $collection['format'] ?? null,
-            label: $collection['label'] ?? null,
+            format: $csvRow['format'] ?? null,
+            label: $csvRow['label'] ?? null,
         );
     }
 }
