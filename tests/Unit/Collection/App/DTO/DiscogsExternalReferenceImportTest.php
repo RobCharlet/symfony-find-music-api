@@ -15,7 +15,7 @@ class DiscogsExternalReferenceImportTest extends TestCase
             'release_id'                  => '2596660',
             'catalog#'                    => 'piasr 210 lp',
             'rating'                      => '4',
-            'collectionfolder'            => 'Uncategorized',
+            'collectionFolder'            => 'Uncategorized',
             'date_added'                  => '2026-01-19 11:01:49',
             'collection_media_condition'  => 'Near Mint (NM or M-)',
             'collection_sleeve_condition' => 'Near Mint (NM or M-)',
@@ -27,7 +27,7 @@ class DiscogsExternalReferenceImportTest extends TestCase
         $this->assertSame('2596660', $dto->externalId);
         $this->assertSame('piasr 210 lp', $dto->metadata['catalog#']);
         $this->assertSame('4', $dto->metadata['rating']);
-        $this->assertSame('Uncategorized', $dto->metadata['collectionFolder']);
+        $this->assertSame('Uncategorized', $dto->metadata['collection_folder']);
         $this->assertSame('2026-01-19 11:01:49', $dto->metadata['date_added']);
         $this->assertSame('Near Mint (NM or M-)', $dto->metadata['collection_media_condition']);
         $this->assertSame('Near Mint (NM or M-)', $dto->metadata['collection_sleeve_condition']);
@@ -42,7 +42,7 @@ class DiscogsExternalReferenceImportTest extends TestCase
         $this->assertNull($dto->externalId);
         $this->assertNull($dto->metadata['catalog#']);
         $this->assertNull($dto->metadata['rating']);
-        $this->assertNull($dto->metadata['collectionFolder']);
+        $this->assertNull($dto->metadata['collection_folder']);
         $this->assertNull($dto->metadata['date_added']);
         $this->assertNull($dto->metadata['collection_media_condition']);
         $this->assertNull($dto->metadata['collection_sleeve_condition']);

@@ -16,13 +16,13 @@ class DiscogsExternalReferenceImport
         return new self(
             externalId: $csvRow['release_id'] ?? null,
             metadata: [
-                'catalog#'                    => $csvRow['catalog#'] ?? null,
-                'rating'                      => $csvRow['rating'] ?? null,
-                'collectionFolder'            => $csvRow['collectionfolder'] ?? null,
-                'date_added'                  => $csvRow['date_added'] ?? null,
-                'collection_media_condition'  => $csvRow['collection_media_condition'] ?? null,
+                'catalog#' => $csvRow['catalog#'] ?? null,
+                'rating' => $csvRow['rating'] ?? null,
+                'collection_folder' => $csvRow['collectionFolder'] ?? null,
+                'date_added' => $csvRow['date_added'] ?? null,
+                'collection_media_condition' => $csvRow['collection_media_condition'] ?? null,
                 'collection_sleeve_condition' => $csvRow['collection_sleeve_condition'] ?? null,
-                'collection_notes'            => $csvRow['collection_notes'] ?? null,
+                'collection_notes' => $csvRow['collection_notes'] ?? null,
             ],
         );
     }
