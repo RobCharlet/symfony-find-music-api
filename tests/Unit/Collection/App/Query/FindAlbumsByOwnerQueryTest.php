@@ -23,6 +23,7 @@ class FindAlbumsByOwnerQueryTest extends TestCase
             50,
             'title',
             'desc',
+            false,
             'rock'
         );
 
@@ -33,6 +34,7 @@ class FindAlbumsByOwnerQueryTest extends TestCase
         $this->assertSame(50, $query->limit);
         $this->assertSame('title', $query->sortBy);
         $this->assertSame('desc', $query->sortOrder);
+        $this->assertSame(false, $query->isFavorite);
         $this->assertSame('rock', $query->genre);
     }
 }

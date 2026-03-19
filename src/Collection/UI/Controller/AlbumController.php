@@ -43,6 +43,7 @@ class AlbumController extends AbstractController
                 new OA\Property(property: 'format', type: 'string', nullable: true),
                 new OA\Property(property: 'label', type: 'string', nullable: true),
                 new OA\Property(property: 'coverUrl', type: 'string', nullable: true),
+                new OA\Property(property: 'isFavorite', type: 'boolean', nullable: true),
             ]
         )
     )]
@@ -154,6 +155,7 @@ class AlbumController extends AbstractController
     #[OA\Parameter(ref: '#/components/parameters/Limit')]
     #[OA\Parameter(ref: '#/components/parameters/SortByAlbum')]
     #[OA\Parameter(ref: '#/components/parameters/SortOrder')]
+    #[OA\Parameter(ref: '#/components/parameters/isFavorite')]
     #[OA\Parameter(ref: '#/components/parameters/Genre')]
     #[OA\Response(
         response: 200,
@@ -185,6 +187,7 @@ class AlbumController extends AbstractController
         $limit = $request->query->getInt('limit', 50);
         $sortBy = $request->query->getString('sort_by') ?: null;
         $sortOrder = strtoupper($request->query->getString('sort_order')) ?: null;
+        $isFavorite = $request->query->has('isFavorite') ? $request->query->getBoolean('isFavorite') : null;
         $genre = $request->query->getString('genre') ?: null;
 
         $userAuthorization = $this->getUserAuthorization();
@@ -197,6 +200,7 @@ class AlbumController extends AbstractController
             $limit,
             $sortBy,
             $sortOrder,
+            $isFavorite,
             $genre
         );
 
@@ -232,6 +236,7 @@ class AlbumController extends AbstractController
             properties: [
                 new OA\Property(property: 'title', type: 'string'),
                 new OA\Property(property: 'artist', type: 'string'),
+                new OA\Property(property: 'isFavorite', type: 'boolean'),
                 new OA\Property(property: 'genre', type: 'string', nullable: true),
                 new OA\Property(property: 'releaseYear', type: 'integer', nullable: true),
                 new OA\Property(property: 'format', type: 'string', nullable: true),

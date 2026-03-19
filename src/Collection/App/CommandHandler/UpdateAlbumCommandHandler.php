@@ -32,6 +32,7 @@ final readonly class UpdateAlbumCommandHandler
             $command->title,
             $command->artist,
             $command->format,
+            $command->isFavorite,
             $command->releaseYear,
             $command->genre,
             $command->label,

@@ -12,6 +12,7 @@
         <field name="artist" column="artist" type="string" nullable="false"/>
         <field name="releaseYear" column="release_year" type="integer" nullable="true"/>
         <field name="format" column="format" type="string" nullable="false"/>
+        <field name="isFavorite" column="is_favorite" type="boolean" nullable="false"/>
         <field name="genre" column="genre" type="string" nullable="true"/>
         <field name="label" column="label" type="string" nullable="true"/>
         <field name="coverUrl" column="cover_url" type="string" nullable="true"/>

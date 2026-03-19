@@ -169,6 +169,7 @@ class AlbumControllerTest extends ControllerTestCase
             'artist' => 'Bonobo',
             'releaseYear' => 2000,
             'format' => 'Vinyle',
+            'isFavorite' => true,
             'genre' => 'Trip Hop',
             'label' => 'Ninja Tune',
             'coverUrl' => 'https://example.com/cover.jpg',
@@ -180,6 +181,7 @@ class AlbumControllerTest extends ControllerTestCase
         $data = json_decode($client->getResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
+        $this->assertTrue($data['isFavorite']);
         $this->assertSame('Animal Magic', $data['title']);
         $this->assertSame('Bonobo', $data['artist']);
         $this->assertSame(2000, $data['releaseYear']);
@@ -512,6 +514,7 @@ class AlbumControllerTest extends ControllerTestCase
             'artist' => 'Bonobo',
             'releaseYear' => 2000,
             'format' => 'Vinyle',
+            'isFavorite' => false,
         ]));
 
         $this->assertResponseStatusCodeSame(404);

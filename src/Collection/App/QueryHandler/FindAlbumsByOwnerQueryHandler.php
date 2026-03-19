@@ -28,6 +28,7 @@ final readonly class FindAlbumsByOwnerQueryHandler
             $query->limit,
             $query->sortBy,
             $query->sortOrder,
+            $query->isFavorite,
             $query->genre
         );
     }

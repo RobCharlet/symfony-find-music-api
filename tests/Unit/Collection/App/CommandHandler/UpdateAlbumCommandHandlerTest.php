@@ -27,6 +27,7 @@ class UpdateAlbumCommandHandlerTest extends TestCase
             'Old Title',
             'Old Artist',
             'CD',
+            false,
             1990,
             'Old Genre',
             'Old Label',
@@ -61,6 +62,7 @@ class UpdateAlbumCommandHandlerTest extends TestCase
                 $this->assertSame('Bonobo', $album->getArtist());
                 $this->assertSame(1992, $album->getReleaseYear());
                 $this->assertSame('Vinyle', $album->getFormat());
+                $this->assertFalse($album->isFavorite());
                 $this->assertSame('Trip Hop', $album->getGenre());
                 $this->assertSame('Ninja Tune', $album->getLabel());
                 $this->assertSame('https://google.com/cover.jpg', $album->getCoverUrl());

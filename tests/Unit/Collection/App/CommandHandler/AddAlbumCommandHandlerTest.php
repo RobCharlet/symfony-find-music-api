@@ -46,6 +46,7 @@ class AddAlbumCommandHandlerTest extends TestCase
                 $this->assertSame('Vinyle', $album->getFormat());
                 $this->assertSame('Trip Hop', $album->getGenre());
                 $this->assertSame('Ninja Tune', $album->getLabel());
+                $this->assertFalse($album->isFavorite());
                 $this->assertSame('https://google.com/cover.jpg', $album->getCoverUrl());
                 $this->assertInstanceOf(\DateTimeImmutable::class, $album->getCreatedAt());
                 $this->assertInstanceOf(\DateTimeImmutable::class, $album->getUpdatedAt());

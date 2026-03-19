@@ -18,6 +18,10 @@ App\Collection\App\Command\UpdateAlbumCommand:
                 max: 2100
         format:
             - NotBlank: ~
+        isFavorite:
+            - NotNull: ~
+            - Type:
+                type: boolean
         genre:
             - Length:
                 max: 100

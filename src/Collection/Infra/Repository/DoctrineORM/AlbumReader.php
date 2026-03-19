@@ -64,6 +64,7 @@ readonly class AlbumReader implements AlbumReaderInterface
         int $limit,
         ?string $sortBy,
         ?string $sortOrder,
+        ?bool $isFavorite,
         ?string $genre,
     ): PaginatorInterface {
         $query = $this->entityManager
@@ -75,7 +76,12 @@ readonly class AlbumReader implements AlbumReaderInterface
             ->where('a.ownerUuid = :ownerUuid')
             ->setParameter('ownerUuid', $ownerUuid);
 
-        if ($genre) {
+        if (null !== $isFavorite) {
+            $query->andWhere('a.isFavorite = :isFavorite')
+                ->setParameter('isFavorite', $isFavorite);
+        }
+
+        if (null !== $genre) {
             $query->andWhere('a.genre = :genre')
                 ->setParameter('genre', $genre);
         }

@@ -24,7 +24,7 @@ class AlbumReaderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid sortBy: caleçon');
 
-        $albumReader->findAllByOwnerUuid($uuid, 1, 10, 'caleçon', null, null);
+        $albumReader->findAllByOwnerUuid($uuid, 1, 10, 'caleçon', null, null, null);
     }
 
     #[Test]
@@ -40,6 +40,6 @@ class AlbumReaderTest extends TestCase
         $this->expectException(\ValueError::class);
         $this->expectExceptionMessage('"ABCD" is not a valid backing value for enum App\Collection\Domain\SortDirectionEnum');
 
-        $albumReader->findAllByOwnerUuid($uuid, 1, 10, 'title', 'ABCD', null);
+        $albumReader->findAllByOwnerUuid($uuid, 1, 10, 'title', 'ABCD', null, null);
     }
 }

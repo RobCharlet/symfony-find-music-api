@@ -97,6 +97,7 @@ final class AlbumFactory extends PersistentObjectFactory
             'genre' => self::faker()->randomElement(self::GENRES),
             'label' => self::faker()->text(),
             'coverUrl' => 'https://example.com/covers/'.self::faker()->uuid().'.jpg',
+            'isFavorite' => self::faker()->boolean(),
         ];
     }
 

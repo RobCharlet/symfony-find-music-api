@@ -27,6 +27,7 @@ class DeleteAlbumCommandHandlerTest extends TestCase
             'Animal Magic',
             'Bonobo',
             'Vinyle',
+            false,
             1992,
             'Trip Hop',
             'Ninja Tune',

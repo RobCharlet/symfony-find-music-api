@@ -12,6 +12,7 @@ final class Album
         private string $title,
         private string $artist,
         private string $format,
+        private bool $isFavorite = false,
         private ?int $releaseYear = null,
         private ?string $genre  = null,
         private ?string $label = null,
@@ -82,10 +83,16 @@ final class Album
         return $this->externalReferences;
     }
 
+    public function isFavorite(): bool
+    {
+        return $this->isFavorite;
+    }
+
     public function update(
         string $title,
         string $artist,
         string $format,
+        bool $isFavorite,
         ?int $releaseYear,
         ?string $genre,
         ?string $label,
@@ -95,6 +102,7 @@ final class Album
         $this->artist = $artist;
         $this->releaseYear = $releaseYear;
         $this->format = $format;
+        $this->isFavorite = $isFavorite;
         $this->genre = $genre;
         $this->label = $label;
         $this->coverUrl = $coverUrl;

@@ -16,6 +16,7 @@ final readonly class AddAlbumCommand
         public ?string $genre,
         public ?string $label,
         public ?string $coverUrl,
+        public bool $isFavorite = false,
     ) {
     }
 
@@ -28,6 +29,7 @@ final readonly class AddAlbumCommand
             artist: $payload['artist'] ?? null,
             releaseYear: $payload['releaseYear'] ?? null,
             format: $payload['format'] ?? null,
+            isFavorite: $payload['isFavorite'] ?? false,
             genre: $payload['genre'] ?? null,
             label: $payload['label'] ?? null,
             coverUrl: $payload['coverUrl'] ?? null,

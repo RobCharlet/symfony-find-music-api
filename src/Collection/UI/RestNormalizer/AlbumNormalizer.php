@@ -26,6 +26,7 @@ readonly class AlbumNormalizer implements NormalizerInterface
             'genre'              => $data->getGenre(),
             'releaseYear'        => $data->getReleaseYear(),
             'format'             => $data->getFormat(),
+            'isFavorite'         => $data->isFavorite(),
             'label'              => $data->getLabel(),
             'coverUrl'           => $data->getCoverUrl(),
             'createdAt'          => $data->getCreatedAt()->format(\DateTimeInterface::ATOM),

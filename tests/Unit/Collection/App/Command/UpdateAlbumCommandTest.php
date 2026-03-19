@@ -20,6 +20,7 @@ class UpdateAlbumCommandTest extends TestCase
             'artist' => 'Bonobo',
             'releaseYear' => '1992',
             'format' => 'Vinyle',
+            'isFavorite' => true,
             'genre' => 'Trip Hop',
             'label' => 'Ninja Tune',
             'coverUrl' => 'https://google.com/cover.jpg',
@@ -32,6 +33,7 @@ class UpdateAlbumCommandTest extends TestCase
         $this->assertSame('Bonobo', $command->artist);
         $this->assertSame('1992', $command->releaseYear);
         $this->assertSame('Vinyle', $command->format);
+        $this->assertTrue($command->isFavorite);
         $this->assertSame('Trip Hop', $command->genre);
         $this->assertSame('Ninja Tune', $command->label);
         $this->assertSame('https://google.com/cover.jpg', $command->coverUrl);
@@ -48,6 +50,7 @@ class UpdateAlbumCommandTest extends TestCase
             'artist' => 'Bonobo',
             'releaseYear' => '1992',
             'format' => 'Vinyle',
+            'isFavorite' => true,
         ];
 
         $command = UpdateAlbumCommand::withData($uuid, $ownerUuid, false, $payload);

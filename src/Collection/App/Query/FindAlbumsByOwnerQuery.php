@@ -14,6 +14,7 @@ final readonly class FindAlbumsByOwnerQuery
         public int $limit,
         public ?string $sortBy,
         public ?string $sortOrder,
+        public ?bool $isFavorite,
         public ?string $genre,
     ) {
     }
@@ -26,6 +27,7 @@ final readonly class FindAlbumsByOwnerQuery
         int $limit = 50,
         ?string $sortBy = null,
         ?string $sortOrder = null,
+        ?bool $isFavorite = null,
         ?string $genre = null,
     ): self {
         return new self(
@@ -36,6 +38,7 @@ final readonly class FindAlbumsByOwnerQuery
             $limit,
             $sortBy,
             $sortOrder,
+            $isFavorite,
             $genre
         );
     }

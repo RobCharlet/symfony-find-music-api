@@ -15,5 +15,8 @@ App\Collection\App\Query\FindAlbumsByOwnerQuery:
             - Choice:
                 choices: [ ASC, DESC ]
                 message: Choose a valid sort order.
+        isFavorite:
+            - Type:
+                  type: boolean
         genre:
             - Type: string

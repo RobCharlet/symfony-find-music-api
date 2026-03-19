@@ -20,6 +20,9 @@ App\Collection\App\Command\AddAlbumCommand:
             - NotBlank: ~
             - Length:
                 max: 255
+        isFavorite:
+            - Type:
+                type: boolean
         genre:
             - Length:
                 max: 100

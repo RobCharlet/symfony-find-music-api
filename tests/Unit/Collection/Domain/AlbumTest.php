@@ -21,6 +21,7 @@ class AlbumTest extends TestCase
             'Animal Magic',
             'Bonobo',
             'Vinyle',
+            true,
             2000,
             'Trip Hop',
             'Ninja Tune',
@@ -33,11 +34,29 @@ class AlbumTest extends TestCase
         $this->assertSame('Bonobo', $album->getArtist());
         $this->assertSame(2000, $album->getReleaseYear());
         $this->assertSame('Vinyle', $album->getFormat());
+        $this->assertTrue($album->isFavorite());
         $this->assertSame('Trip Hop', $album->getGenre());
         $this->assertSame('Ninja Tune', $album->getLabel());
         $this->assertSame('https://example.com/cover.jpg', $album->getCoverUrl());
         $this->assertInstanceOf(\DateTimeImmutable::class, $album->getCreatedAt());
         $this->assertInstanceOf(\DateTimeImmutable::class, $album->getUpdatedAt());
+    }
+
+    #[Test]
+    public function albumDefaultsIsFavoriteToFalse(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+
+        $album = new Album(
+            $uuid,
+            $ownerUuid,
+            'Black Sands',
+            'Bonobo',
+            'Vinyle',
+        );
+
+        $this->assertFalse($album->isFavorite());
     }
 
     #[Test]
@@ -52,6 +71,7 @@ class AlbumTest extends TestCase
             'Old Title',
             'Old Artist',
             'CD',
+            false,
             1990,
             'Rock',
             'Old Label',
@@ -64,6 +84,7 @@ class AlbumTest extends TestCase
             'Animal Magic',
             'Bonobo',
             'Vinyle',
+            true,
             2000,
             'Trip Hop',
             'Ninja Tune',
@@ -74,6 +95,7 @@ class AlbumTest extends TestCase
         $this->assertSame('Bonobo', $album->getArtist());
         $this->assertSame(2000, $album->getReleaseYear());
         $this->assertSame('Vinyle', $album->getFormat());
+        $this->assertTrue($album->isFavorite());
         $this->assertSame('Trip Hop', $album->getGenre());
         $this->assertSame('Ninja Tune', $album->getLabel());
         $this->assertSame('https://example.com/cover.jpg', $album->getCoverUrl());

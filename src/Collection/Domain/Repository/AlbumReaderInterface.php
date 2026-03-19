@@ -18,6 +18,7 @@ interface AlbumReaderInterface
         int $limit,
         ?string $sortBy,
         ?string $sortOrder,
+        ?bool $isFavorite,
         ?string $genre,
     ): PaginatorInterface;
 }

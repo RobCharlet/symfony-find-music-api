@@ -20,6 +20,7 @@ class AddAlbumCommandTest extends TestCase
             'artist' => 'Bonobo',
             'releaseYear' => '1992',
             'format' => 'Vinyle',
+            'isFavorite' => true,
             'genre' => 'Trip Hop',
             'label' => 'Ninja Tune',
             'coverUrl' => 'https://google.com/cover.jpg',
@@ -33,6 +34,7 @@ class AddAlbumCommandTest extends TestCase
         $this->assertSame('Bonobo', $command->artist);
         $this->assertSame('1992', $command->releaseYear);
         $this->assertSame('Vinyle', $command->format);
+        $this->assertTrue($command->isFavorite);
         $this->assertSame('Trip Hop', $command->genre);
         $this->assertSame('Ninja Tune', $command->label);
         $this->assertSame('https://google.com/cover.jpg', $command->coverUrl);
@@ -49,6 +51,7 @@ class AddAlbumCommandTest extends TestCase
             'artist' => 'Bonobo',
             'releaseYear' => '1992',
             'format' => 'Vinyle',
+            'isFavorite' => false,
         ];
 
         $command = AddAlbumCommand::withData($uuid, $ownerUuid, $payload);
@@ -56,5 +59,23 @@ class AddAlbumCommandTest extends TestCase
         $this->assertNull($command->genre);
         $this->assertNull($command->label);
         $this->assertNull($command->coverUrl);
+    }
+
+    #[Test]
+    public function addAlbumCommandDefaultsIsFavoriteToFalseWhenMissing(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+
+        $payload = [
+            'title' => 'Animal Magic',
+            'artist' => 'Bonobo',
+            'releaseYear' => '1992',
+            'format' => 'Vinyle',
+        ];
+
+        $command = AddAlbumCommand::withData($uuid, $ownerUuid, $payload);
+
+        $this->assertFalse($command->isFavorite);
     }
 }

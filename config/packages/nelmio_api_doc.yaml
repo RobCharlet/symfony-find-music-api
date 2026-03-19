@@ -35,6 +35,14 @@ nelmio_api_doc:
                         nullable: true
                         enum: [ ASC, DESC ]
                         example: DESC
+                isFavorite:
+                    name: isFavorite
+                    in: query
+                    description: Filter by favorite status
+                    schema:
+                        type: boolean
+                        nullable: true
+                        example: true
                 Genre:
                     name: genre
                     in: query
@@ -86,6 +94,8 @@ nelmio_api_doc:
                         format:
                             type: string
                             nullable: true
+                        isFavorite:
+                            type: boolean
                         label:
                             type: string
                             nullable: true

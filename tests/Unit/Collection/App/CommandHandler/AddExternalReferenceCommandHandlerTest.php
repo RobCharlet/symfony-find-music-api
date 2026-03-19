@@ -30,6 +30,7 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
             'Animal Magic',
             'Bonobo',
             'Vinyle',
+            false,
             1992,
             'Trip Hop',
             'Ninja Tune',
@@ -76,7 +77,18 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
         $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
         $otherUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369f');
 
-        $album = new Album($albumUuid, $ownerUuid, 'Animal Magic', 'Bonobo', 'Vinyle', 1992, 'Trip Hop', 'Ninja Tune', null);
+        $album = new Album(
+            $albumUuid,
+            $ownerUuid,
+            'Animal Magic',
+            'Bonobo',
+            'Vinyle',
+            false,
+            1992,
+            'Trip Hop',
+            'Ninja Tune',
+            null
+        );
 
         $payload = [
             'albumUuid'  => '019c2e97-8e0e-776c-bf55-76a2765e369d',
@@ -106,7 +118,18 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
         $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369e');
         $adminUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369f');
 
-        $album = new Album($albumUuid, $ownerUuid, 'Animal Magic', 'Bonobo', 'Vinyle', 1992, 'Trip Hop', 'Ninja Tune', null);
+        $album = new Album(
+            $albumUuid,
+            $ownerUuid,
+            'Animal Magic',
+            'Bonobo',
+            'Vinyle',
+            false,
+            1992,
+            'Trip Hop',
+            'Ninja Tune',
+            null
+        );
 
         $payload = [
             'albumUuid'  => '019c2e97-8e0e-776c-bf55-76a2765e369d',

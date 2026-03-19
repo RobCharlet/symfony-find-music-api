@@ -50,6 +50,7 @@ abstract class ControllerTestCase extends WebTestCase
             'artist' => 'Bonobo',
             'releaseYear' => 2000,
             'format' => 'Vinyle',
+            'isFavorite' => true,
             'genre' => 'Trip Hop',
             'label' => 'Ninja Tune',
             'coverUrl' => 'https://example.com/cover.jpg',
