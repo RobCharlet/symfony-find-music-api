@@ -506,6 +506,58 @@ class AlbumControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function retrieveStatsByOwnerUuidReturnsStats()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user);
+        $this->createAlbumOwnedBy($user, [
+            'title' => 'Black Sands',
+            'artist' => 'Bonobo',
+            'releaseYear' => 2010,
+            'format' => 'CD, Vinyle',
+            'genre' => 'Downtempo',
+            'label' => 'Ninja Tune',
+        ]);
+
+        $client->request('GET', '/api/albums/owner/'.$user->getUuid().'/stats');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('stats', $data);
+        $this->assertSame(2, (int) $data['stats']['totalAlbums']);
+        $this->assertArrayHasKey('genres', $data['stats']);
+        $this->assertArrayHasKey('formats', $data['stats']);
+        $this->assertArrayHasKey('releaseYears', $data['stats']);
+        $this->assertArrayHasKey('labels', $data['stats']);
+    }
+
+    #[Test]
+    public function retrieveStatsByOwnerUuidUnauthenticatedReturns401()
+    {
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+
+        $client->request('GET', '/api/albums/owner/019c2e97-8e0e-776c-bf55-76a2765e369d/stats');
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    #[Test]
+    public function retrieveStatsByOwnerUuidByDifferentUserReturns403()
+    {
+        [$ownerClient, $owner] = $this->createAuthenticatedClientWithUser(email: 'statsowner@test.com');
+        $this->createAlbumOwnedBy($owner);
+
+        [$otherClient] = $this->createAuthenticatedClientWithUser(email: 'statsother@test.com');
+
+        $otherClient->request('GET', '/api/albums/owner/'.$owner->getUuid().'/stats');
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    #[Test]
     public function updateAlbumNotFound()
     {
 

@@ -7,6 +7,7 @@ use App\Collection\App\Command\DeleteAlbumCommand;
 use App\Collection\App\Command\UpdateAlbumCommand;
 use App\Collection\App\Query\FindAlbumQuery;
 use App\Collection\App\Query\FindAlbumsByOwnerQuery;
+use App\Collection\App\Query\GetStatsByOwnerQuery;
 use App\Collection\UI\RestNormalizer\AlbumNormalizer;
 use App\Shared\App\DTO\PaginationDTO;
 use App\Shared\UI\Controller\UserAuthorizationTrait;
@@ -218,6 +219,54 @@ class AlbumController extends AbstractController
                 'data' => $albums,
                 'pagination' => PaginationDTO::fromPaginator($paginator),
             ],
+            Response::HTTP_OK
+        );
+    }
+
+    #[Route(
+        '/owner/{ownerUuid}/stats',
+        name: 'collection_stats_owner',
+        requirements: ['_format' => 'json'],
+        methods: ['GET']
+    )]
+    #[OA\Parameter(
+        name: 'ownerUuid',
+        description: 'Owner UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns collection statistics of an owner',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: 'stats',
+                    ref: '#/components/schemas/Statistics'
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden')]
+    public function stats(
+        MessageBusInterface $queryBus,
+        Uuid $ownerUuid,
+    ): JsonResponse {
+        $userAuthorization = $this->getUserAuthorization();
+
+        $query = GetStatsByOwnerQuery::withOwnerUuid(
+            $ownerUuid,
+            $userAuthorization->userUuid,
+            $userAuthorization->isAdmin,
+        );
+        $envelope = $queryBus->dispatch($query);
+
+        $stats = $envelope->last(HandledStamp::class)->getResult();
+
+        return new JsonResponse(
+            ['stats' => $stats],
             Response::HTTP_OK
         );
     }

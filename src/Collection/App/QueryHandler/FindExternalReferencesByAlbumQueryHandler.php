@@ -13,7 +13,7 @@ final readonly class FindExternalReferencesByAlbumQueryHandler
 {
     public function __construct(
         private AlbumReaderInterface $albumReader,
-        private ExternalReferenceReaderInterface $reader,
+        private ExternalReferenceReaderInterface $externalReferenceReader,
     ) {
     }
 
@@ -25,6 +25,6 @@ final readonly class FindExternalReferencesByAlbumQueryHandler
             throw new OwnershipForbiddenException();
         }
 
-        return $this->reader->findAllByAlbumUuid($query->albumUuid);
+        return $this->externalReferenceReader->findAllByAlbumUuid($query->albumUuid);
     }
 }

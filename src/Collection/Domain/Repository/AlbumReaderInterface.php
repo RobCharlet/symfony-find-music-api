@@ -21,4 +21,6 @@ interface AlbumReaderInterface
         ?bool $isFavorite,
         ?string $genre,
     ): PaginatorInterface;
+
+    public function findStatsByOwnerUuid(Uuid $ownerUuid): array;
 }

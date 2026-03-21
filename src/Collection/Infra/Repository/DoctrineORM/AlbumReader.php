@@ -10,6 +10,7 @@ use App\Collection\Domain\SortByEnum;
 use App\Collection\Domain\SortDirectionEnum;
 use App\Collection\Infra\Paginator;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Symfony\Component\Uid\Uuid;
 
@@ -105,5 +106,94 @@ readonly class AlbumReader implements AlbumReaderInterface
         $paginator->setCurrentPage($page);
 
         return $paginator;
+    }
+
+    public function findStatsByOwnerUuid(Uuid $ownerUuid): array
+    {
+        $stats = [];
+
+        $totalAlbumQuery = $this->createCollectionOwnerQueryBuilder($ownerUuid)
+            ->select('count(a.uuid) as totalAlbums')
+            ->getQuery();
+
+        $stats['totalAlbums'] = (int) $totalAlbumQuery->getResult()[0]['totalAlbums'];
+
+        $genresQuery = $this->createCollectionOwnerQueryBuilder($ownerUuid)
+            ->select('distinct a.genre', 'count(a.uuid) as count')
+            ->groupBy('a.genre')
+            ->getQuery();
+
+        $stats['genres'] = array_column(
+            $genresQuery->getResult(),
+            'count',
+            'genre'
+        );
+
+        $this->replaceEmptyKeyWithUnknown($stats['genres']);
+
+        $formatsQuery = $this->createCollectionOwnerQueryBuilder($ownerUuid)
+            ->select('a.format')
+            ->getQuery();
+
+        $results = $formatsQuery->getResult();
+
+        $explodedFormats = [];
+
+        foreach ($results as $format) {
+            $explodedFormats[] = array_map('trim', explode(',', $format['format']));
+        }
+
+        $allFormats = array_merge(...$explodedFormats);
+
+        $formatCounts = array_count_values($allFormats);
+        ksort($formatCounts);
+
+        $stats['formats'] = $formatCounts;
+
+        $releaseYearQuery = $this->createCollectionOwnerQueryBuilder($ownerUuid)
+            ->select('distinct a.releaseYear', 'count(a.uuid) as count')
+            ->groupBy('a.releaseYear')
+            ->getQuery();
+
+        $stats['releaseYears'] = array_column(
+            $releaseYearQuery->getResult(),
+            'count',
+            'releaseYear'
+        );
+
+        $this->replaceEmptyKeyWithUnknown($stats['releaseYears']);
+
+        $labelQuery = $this->createCollectionOwnerQueryBuilder($ownerUuid)
+            ->select('distinct a.label', 'count(a.uuid) as count')
+            ->groupBy('a.label')
+            ->orderBy('a.label', 'ASC')
+            ->getQuery();
+
+        $stats['labels'] = array_column(
+            $labelQuery->getResult(),
+            'count',
+            'label'
+        );
+
+        $this->replaceEmptyKeyWithUnknown($stats['labels']);
+
+        return $stats;
+    }
+
+    private function createCollectionOwnerQueryBuilder(Uuid $ownerUuid): QueryBuilder
+    {
+        return $this->entityManager
+            ->createQueryBuilder()
+            ->from(Album::class, 'a')
+            ->where('a.ownerUuid = :ownerUuid')
+            ->setParameter('ownerUuid', $ownerUuid);
+    }
+
+    private function replaceEmptyKeyWithUnknown(array &$array): void
+    {
+        if (isset($array[''])) {
+            $array['Unknown'] = $array[''];
+            unset($array['']);
+        }
     }
 }

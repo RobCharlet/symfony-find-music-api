@@ -130,6 +130,27 @@ nelmio_api_doc:
                         hasPreviousPage:
                             type: boolean
 
+                Statistics:
+                    type: object
+                    properties:
+                        totalAlbums:
+                            type: integer
+                        genres:
+                            type: object
+                            additionalProperties:
+                                type: integer
+                        formats:
+                            type: object
+                            additionalProperties:
+                                type: integer
+                        releaseYears:
+                            type: object
+                            additionalProperties:
+                                type: integer
+                        labels:
+                            type: object
+                            additionalProperties:
+                                type: integer
                 User:
                     type: object
                     properties:
