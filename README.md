@@ -120,17 +120,39 @@ All other `/api/*` routes require a valid JWT (`IS_AUTHENTICATED_FULLY`).
 
 ---
 
-## Getting Started
+## Local Development
 
 > **Note:** Use `symfony php` / `symfony console` (Symfony CLI) instead of `php` / `bin/console` directly. The Symfony CLI auto-exposes Docker environment variables (e.g. dynamic PostgreSQL port).
 
+### Prerequisites
+
+- PHP 8.4+
+- [Symfony CLI](https://symfony.com/download)
+- [Composer](https://getcomposer.org/)
+- Docker & Docker Compose
+
+### Setup
+
+1. Start the database container:
+   ```bash
+   docker compose up -d
+   ```
+2. Install dependencies:
+   ```bash
+   composer install
+   ```
+3. Run database migrations:
+   ```bash
+   symfony console doctrine:migrations:migrate
+   ```
+4. Generate JWT keys:
+   ```bash
+   symfony console lexik:jwt:generate-keypair --skip-if-exists
+   ```
+
+### Useful Commands
+
 ```bash
-# Install dependencies
-composer install
-
-# Run database migrations
-symfony console doctrine:migrations:migrate
-
 # Run tests
 symfony php bin/phpunit
 
@@ -145,6 +167,35 @@ symfony console lint:yaml config/
 symfony console lint:container
 symfony console nelmio:apidoc:dump --no-pretty > /dev/null
 ```
+
+---
+
+## Production Deployment
+
+The production stack runs 3 Docker services: `app` (PHP 8.4-FPM), `nginx` (reverse proxy on port 8080), and `db` (PostgreSQL 16).
+
+### Setup
+
+1. Copy `.env.example` to `.env` and fill in: `APP_SECRET`, `DATABASE_URL`, `JWT_PASSPHRASE`, `CORS_ALLOW_ORIGIN`, `DEFAULT_URI`
+2. Create the DB secret (password must match the one in `DATABASE_URL`):
+   ```bash
+   mkdir -p secrets && echo "your_password" > secrets/db_password
+   ```
+3. Generate JWT keys:
+   ```bash
+   symfony console lexik:jwt:generate-keypair --skip-if-exists
+   ```
+4. Build and start:
+   ```bash
+   docker compose -f docker-compose.prod.yml build
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+5. Run migrations:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec app php bin/console doctrine:migrations:migrate --no-interaction
+   ```
+
+The API is available at `http://localhost:${NGINX_PORT:-8080}`.
 
 ---
 
