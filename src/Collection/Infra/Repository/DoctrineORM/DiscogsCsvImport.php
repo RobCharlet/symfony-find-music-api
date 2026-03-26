@@ -35,10 +35,10 @@ readonly class DiscogsCsvImport implements CsvImportInterface
         $decoder = new CsvEncoder();
         $dbConnection = $this->entityManager->getConnection();
         $results = [
-            'total'    => 0,
+            'total' => 0,
             'imported' => 0,
-            'skipped'  => 0,
-            'errors'   => [],
+            'skipped' => 0,
+            'errors' => [],
         ];
 
         // Normalize CSV header
@@ -110,11 +110,11 @@ readonly class DiscogsCsvImport implements CsvImportInterface
                 $message = sprintf('Missing required value(s): %s.', implode(', ', $missingRequiredValues));
 
                 $this->logger->warning('import.row_error', [
-                    'line'    => $index + 2,
+                    'line' => $index + 2,
                     'message' => $message,
                 ]);
                 $results['errors'][] = [
-                    'line'    => $index + 2,
+                    'line' => $index + 2,
                     'message' => $message,
                 ];
 
@@ -122,21 +122,21 @@ readonly class DiscogsCsvImport implements CsvImportInterface
             }
 
             try {
-                $albumUuid             = UuidV7::v7();
+                $albumUuid = UuidV7::v7();
                 $externalReferenceUuid = UuidV7::v7();
 
-                $albumDTO             = DiscogsAlbumImport::withData($csvRow);
+                $albumDTO = DiscogsAlbumImport::withData($csvRow);
                 $externalReferenceDTO = DiscogsExternalReferenceImport::withData(
                     $csvRow
                 );
 
-                $existingAlbum = $this->externalReferenceReader->existsByOwnerPlatformExternalId(
+                $isDuplicate = $this->externalReferenceReader->existsByOwnerPlatformExternalId(
                     $userUuid,
                     $platform->value,
                     $externalReferenceDTO->externalId
                 );
 
-                if ($existingAlbum) {
+                if ($isDuplicate) {
                     ++$results['skipped'];
                     continue;
                 }
@@ -172,11 +172,11 @@ readonly class DiscogsCsvImport implements CsvImportInterface
 
                 $line = $index + 2;
                 $this->logger->warning('import.row_error', [
-                    'line'    => $line,
+                    'line' => $line,
                     'message' => $e->getMessage(),
                 ]);
                 $results['errors'][] = [
-                    'line'    => $line,
+                    'line' => $line,
                     'message' => $e->getMessage(),
                 ];
             }

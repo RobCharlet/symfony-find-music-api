@@ -110,7 +110,7 @@ All other `/api/*` routes require a valid JWT (`IS_AUTHENTICATED_FULLY`).
 | `GET` | `/api/albums/{uuid}` | Authenticated | Find album |
 | `PUT` | `/api/albums/{uuid}` | Authenticated | Update album |
 | `DELETE` | `/api/albums/{uuid}` | Authenticated | Delete album |
-| `GET` | `/api/albums/owner/{uuid}` | Authenticated | Find albums by owner (paginated, filterable by `genre`, sortable via `sort_by`/`sort_order`) |
+| `GET` | `/api/collections/owner/{uuid}` | Authenticated | Find albums by owner (paginated, filterable by `genre`, sortable via `sort_by`/`sort_order`) |
 | `POST` | `/api/external-references` | Authenticated | Add external reference |
 | `GET` | `/api/external-references/{uuid}` | Authenticated | Find external reference |
 | `PUT` | `/api/external-references/{uuid}` | Authenticated | Update external reference |

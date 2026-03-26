@@ -189,11 +189,11 @@ readonly class AlbumReader implements AlbumReaderInterface
             ->setParameter('ownerUuid', $ownerUuid);
     }
 
-    private function replaceEmptyKeyWithUnknown(array &$array): void
+    private function replaceEmptyKeyWithUnknown(array &$statGroup): void
     {
-        if (isset($array[''])) {
-            $array['Unknown'] = $array[''];
-            unset($array['']);
+        if (isset($statGroup[''])) {
+            $statGroup['Unknown'] = $statGroup[''];
+            unset($statGroup['']);
         }
     }
 }

@@ -30,9 +30,9 @@ readonly class UserReader implements UserReaderInterface
         return $securityUser->toDomain();
     }
 
-    private function findSecurityUser(array $by): SecurityUser
+    private function findSecurityUser(array $criteria): SecurityUser
     {
-        $securityUser = $this->entityManager->getRepository(SecurityUser::class)->findOneBy($by);
+        $securityUser = $this->entityManager->getRepository(SecurityUser::class)->findOneBy($criteria);
 
         if (null === $securityUser) {
             throw new UserNotFoundException();
