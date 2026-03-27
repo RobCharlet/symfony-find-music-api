@@ -39,25 +39,9 @@ class CollectionController extends AbstractController
     #[OA\Parameter(ref: '#/components/parameters/SortOrder')]
     #[OA\Parameter(ref: '#/components/parameters/isFavorite')]
     #[OA\Parameter(ref: '#/components/parameters/Genre')]
-    #[OA\Response(
-        response: 200,
-        description: 'Returns albums of an owner',
-        content: new OA\JsonContent(
-            properties: [
-                new OA\Property(
-                    property: 'data',
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/Album')
-                ),
-                new OA\Property(
-                    property: 'pagination',
-                    ref: '#/components/schemas/Pagination',
-                ),
-            ]
-        )
-    )]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
+    #[OA\Response(response: 200, description: 'Returns albums of an owner', content: new OA\JsonContent(ref: '#/components/schemas/PaginatedAlbumResponse'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
     #[Security(name: 'Bearer')]
     public function findByOwner(
         AlbumNormalizer $normalizer,
@@ -117,20 +101,9 @@ class CollectionController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(
-        response: 200,
-        description: 'Returns collection statistics of an owner',
-        content: new OA\JsonContent(
-            properties: [
-                new OA\Property(
-                    property: 'stats',
-                    ref: '#/components/schemas/Statistics'
-                ),
-            ]
-        )
-    )]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
+    #[OA\Response(response: 200, description: 'Returns collection statistics of an owner', content: new OA\JsonContent(ref: '#/components/schemas/StatisticsResponse'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
     public function stats(
         MessageBusInterface $queryBus,
         Uuid $ownerUuid,

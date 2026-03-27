@@ -160,6 +160,62 @@ nelmio_api_doc:
                         email:
                             type: string
                             format: email
+
+                PaginatedAlbumResponse:
+                    type: object
+                    properties:
+                        data:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/Album'
+                        pagination:
+                            $ref: '#/components/schemas/Pagination'
+
+                PaginatedExternalReferenceResponse:
+                    type: object
+                    properties:
+                        data:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/ExternalReference'
+                        pagination:
+                            $ref: '#/components/schemas/Pagination'
+
+                ExternalReferenceListResponse:
+                    type: object
+                    properties:
+                        data:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/ExternalReference'
+
+                StatisticsResponse:
+                    type: object
+                    properties:
+                        stats:
+                            $ref: '#/components/schemas/Statistics'
+            responses:
+                Created:
+                    description: Resource created
+                    headers:
+                        Location:
+                            description: URL of the created resource
+                            schema:
+                                type: string
+                NoContent:
+                    description: Resource updated/deleted
+                Unauthorized:
+                    description: Unauthorized
+                Forbidden:
+                    description: Forbidden
+                NotFound:
+                    description: Not found
+                InvalidJson:
+                    description: Invalid JSON
+                Conflict:
+                    description: Conflict (duplicate)
+                ValidationError:
+                    description: Validation error
         tags:
             -   name: Auth
             -   name: Users

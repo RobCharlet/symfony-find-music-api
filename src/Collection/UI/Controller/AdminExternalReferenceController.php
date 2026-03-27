@@ -30,25 +30,9 @@ class AdminExternalReferenceController extends AbstractController
     )]
     #[OA\Parameter(ref: '#/components/parameters/Page')]
     #[OA\Parameter(ref: '#/components/parameters/Limit')]
-    #[OA\Response(
-        response: 200,
-        description: 'List of External References',
-        content: new OA\JsonContent(
-            properties: [
-                new OA\Property(
-                    property: 'data',
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/ExternalReference')
-                ),
-                new OA\Property(
-                    property: 'pagination',
-                    ref: '#/components/schemas/Pagination',
-                ),
-            ]
-        )
-    )]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
+    #[OA\Response(response: 200, description: 'List of External References', content: new OA\JsonContent(ref: '#/components/schemas/PaginatedExternalReferenceResponse'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
     #[Security(name: 'Bearer')]
     public function findAll(
         ExternalReferenceNormalizer $normalizer,

@@ -87,8 +87,8 @@ class DiscogsImportController extends AbstractController
             type: 'object'
         )
     )]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     #[Security(name: 'Bearer')]
     public function import(
         MessageBusInterface $messageBus,

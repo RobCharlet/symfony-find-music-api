@@ -45,17 +45,11 @@ class AlbumController extends AbstractController
             ]
         )
     )]
-    #[OA\Response(response: 201, description: 'Album created', headers: [
-        new OA\Header(
-            header: 'Location',
-            description: 'URL of the created album',
-            schema: new OA\Schema(type: 'string')
-        ),
-    ])]
-    #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 409, description: 'Conflict')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/Created', response: 201)]
+    #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Conflict', response: 409)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     #[Security(name: 'Bearer')]
     public function create(
         MessageBusInterface $commandBus,
@@ -84,10 +78,10 @@ class AlbumController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(response: 204, description: 'Album deleted')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Album not found')]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     #[Security(name: 'Bearer')]
     public function delete(
         MessageBusInterface $commandBus,
@@ -112,12 +106,10 @@ class AlbumController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(response: 200, description: 'Returns the album', content: new OA\JsonContent(
-        ref: '#/components/schemas/Album'
-    ))]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Album not found')]
+    #[OA\Response(response: 200, description: 'Returns the album', content: new OA\JsonContent(ref: '#/components/schemas/Album'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     #[Security(name: 'Bearer')]
     public function find(
         AlbumNormalizer $normalizer,
@@ -164,12 +156,12 @@ class AlbumController extends AbstractController
             ]
         )
     )]
-    #[OA\Response(response: 204, description: 'Album updated')]
-    #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Album not found')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     #[Security(name: 'Bearer')]
     public function update(
         MessageBusInterface $commandBus,

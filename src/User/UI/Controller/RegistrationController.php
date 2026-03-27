@@ -26,20 +26,10 @@ class RegistrationController extends AbstractController
             ]
         )
     )]
-    #[OA\Response(
-        response: 201,
-        description: 'User registered',
-        headers: [
-            new OA\Header(
-                header: 'Location',
-                description: 'URL of the created user',
-                schema: new OA\Schema(type: 'string')
-            ),
-        ]
-    )]
-    #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 409, description: 'Conflict')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/Created', response: 201)]
+    #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
+    #[OA\Response(ref: '#/components/responses/Conflict', response: 409)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     public function register(MessageBusInterface $commandBus, Request $request): JsonResponse
     {
         $uuid = UuidV7::v7();

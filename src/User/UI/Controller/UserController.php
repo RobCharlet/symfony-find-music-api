@@ -29,14 +29,8 @@ class UserController extends AbstractController
     use UserAuthorizationTrait;
 
     #[Route('/me', name: 'user_identity', methods: ['GET'])]
-    #[OA\Response(
-        response: 200,
-        description: 'Return user identity.',
-        content: new OA\JsonContent(
-            ref: '#/components/schemas/User',
-        ),
-    )]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 200, description: 'Return user identity.', content: new OA\JsonContent(ref: '#/components/schemas/User'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
     public function me(
         UserNormalizer $normalizer,
     ): JsonResponse {
@@ -58,22 +52,12 @@ class UserController extends AbstractController
             ]
         )
     )]
-    #[OA\Response(
-        response: 201,
-        description: 'Create a new user.',
-        headers: [
-            new OA\Header(
-                header: 'Location',
-                description: 'Return the user API location.',
-                schema: new OA\Schema(type: 'string')
-            ),
-        ]
-    )]
-    #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Admin only')]
-    #[OA\Response(response: 409, description: 'Conflict')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/Created', response: 201)]
+    #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/Conflict', response: 409)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     public function createUser(
         MessageBusInterface $commandBus,
         Request $request,
@@ -105,12 +89,10 @@ class UserController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(response: 200, description: 'Returns the user', content: new OA\JsonContent(
-        ref: '#/components/schemas/User'
-    ))]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Not found')]
+    #[OA\Response(response: 200, description: 'Returns the user', content: new OA\JsonContent(ref: '#/components/schemas/User'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     public function findUser(
         Uuid $uuid,
         UserNormalizer $normalizer,
@@ -151,12 +133,12 @@ class UserController extends AbstractController
             ]
         )
     )]
-    #[OA\Response(response: 204, description: 'User updated')]
-    #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden or invalid current password')]
-    #[OA\Response(response: 404, description: 'Not found')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     public function updateUser(
         MessageBusInterface $commandBus,
         Request $request,
@@ -192,10 +174,10 @@ class UserController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(response: 204, description: 'User deleted')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Not found')]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     public function deleteUser(
         MessageBusInterface $commandBus,
         Uuid $uuid,

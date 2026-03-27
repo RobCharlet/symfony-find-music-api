@@ -24,25 +24,9 @@ class AdminCollectionController extends AbstractController
     #[Route('/collections', name: 'admin_collection_list', requirements: ['_format' => 'json'], methods: ['GET'])]
     #[OA\Parameter(ref: '#/components/parameters/Page')]
     #[OA\Parameter(ref: '#/components/parameters/Limit')]
-    #[OA\Response(
-        response: 200,
-        description: 'Returns all collections.',
-        content: new OA\JsonContent(
-            properties: [
-                new OA\Property(
-                    property: 'data',
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/Album')
-                ),
-                new OA\Property(
-                    property: 'pagination',
-                    ref: '#/components/schemas/Pagination'
-                ),
-            ]
-        )
-    )]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
+    #[OA\Response(response: 200, description: 'Returns all collections.', content: new OA\JsonContent(ref: '#/components/schemas/PaginatedAlbumResponse'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
     #[Security(name: 'Bearer')]
     public function findCollections(
         AlbumNormalizer $normalizer,

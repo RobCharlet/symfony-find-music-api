@@ -42,17 +42,11 @@ class ExternalReferenceController extends AbstractController
             ]
         )
     )]
-    #[OA\Response(response: 201, description: 'External reference created', headers: [
-        new OA\Header(
-            header: 'Location',
-            description: 'URL of the created resource',
-            schema: new OA\Schema(type: 'string')
-        ),
-    ])]
-    #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 409, description: 'Conflict')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/Created', response: 201)]
+    #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Conflict', response: 409)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     #[Security(name: 'Bearer')]
     public function create(MessageBusInterface $commandBus, Request $request): JsonResponse
     {
@@ -85,12 +79,10 @@ class ExternalReferenceController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(response: 200, description: 'Returns the external reference', content: new OA\JsonContent(
-        ref: '#/components/schemas/ExternalReference'
-    ))]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Not found')]
+    #[OA\Response(response: 200, description: 'Returns the external reference', content: new OA\JsonContent(ref: '#/components/schemas/ExternalReference'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     #[Security(name: 'Bearer')]
     public function find(
         ExternalReferenceNormalizer $normalizer,
@@ -127,22 +119,10 @@ class ExternalReferenceController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(
-        response: 200,
-        description: 'Returns external references of an album',
-        content: new OA\JsonContent(
-            properties: [
-                new OA\Property(
-                    property: 'data',
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/ExternalReference')
-                ),
-            ]
-        )
-    )]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Album not found')]
+    #[OA\Response(response: 200, description: 'Returns external references of an album', content: new OA\JsonContent(ref: '#/components/schemas/ExternalReferenceListResponse'))]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     #[Security(name: 'Bearer')]
     public function findByAlbum(
         ExternalReferenceNormalizer $normalizer,
@@ -190,12 +170,12 @@ class ExternalReferenceController extends AbstractController
             ]
         )
     )]
-    #[OA\Response(response: 204, description: 'External reference updated')]
-    #[OA\Response(response: 400, description: 'Invalid JSON')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Not found')]
-    #[OA\Response(response: 422, description: 'Validation error')]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
+    #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     #[Security(name: 'Bearer')]
     public function update(MessageBusInterface $commandBus, Request $request, Uuid $uuid): JsonResponse
     {
@@ -225,10 +205,10 @@ class ExternalReferenceController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Response(response: 204, description: 'External reference deleted')]
-    #[OA\Response(response: 401, description: 'Unauthorized')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'Not found')]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     #[Security(name: 'Bearer')]
     public function delete(MessageBusInterface $commandBus, Uuid $uuid): JsonResponse
     {
