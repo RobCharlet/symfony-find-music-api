@@ -59,7 +59,7 @@ readonly class AlbumReader implements AlbumReaderInterface
         return $album;
     }
 
-    public function findAllByOwnerUuid(
+    public function findAllByOwnerUuidWithPagination(
         Uuid $ownerUuid,
         int $page,
         int $limit,
@@ -68,7 +68,7 @@ readonly class AlbumReader implements AlbumReaderInterface
         ?bool $isFavorite,
         ?string $genre,
     ): PaginatorInterface {
-        $query = $this->entityManager
+        $qb = $this->entityManager
             ->createQueryBuilder()
             ->select('a')
             ->addSelect('e')
@@ -78,12 +78,12 @@ readonly class AlbumReader implements AlbumReaderInterface
             ->setParameter('ownerUuid', $ownerUuid);
 
         if (null !== $isFavorite) {
-            $query->andWhere('a.isFavorite = :isFavorite')
+            $qb->andWhere('a.isFavorite = :isFavorite')
                 ->setParameter('isFavorite', $isFavorite);
         }
 
         if (null !== $genre) {
-            $query->andWhere('a.genre = :genre')
+            $qb->andWhere('a.genre = :genre')
                 ->setParameter('genre', $genre);
         }
 
@@ -95,12 +95,12 @@ readonly class AlbumReader implements AlbumReaderInterface
         }
 
         if ($sortBy && $sortOrder) {
-            $query->orderBy(self::SORT_COLUMN_MAP[$sortBy], SortDirectionEnum::from($sortOrder)->value);
+            $qb->orderBy(self::SORT_COLUMN_MAP[$sortBy], SortDirectionEnum::from($sortOrder)->value);
         } else {
-            $query->orderBy('a.uuid', $sortOrder);
+            $qb->orderBy('a.uuid', $sortOrder);
         }
 
-        $paginator = new Paginator(new QueryAdapter($query->getQuery()));
+        $paginator = new Paginator(new QueryAdapter($qb->getQuery()));
         $paginator->setAllowOutOfRangePages(true);
         $paginator->setMaxPerPage($limit);
         $paginator->setCurrentPage($page);
@@ -135,12 +135,12 @@ readonly class AlbumReader implements AlbumReaderInterface
             ->select('a.format')
             ->getQuery();
 
-        $results = $formatsQuery->getResult();
+        $formatRows = $formatsQuery->getResult();
 
         $explodedFormats = [];
 
-        foreach ($results as $format) {
-            $explodedFormats[] = array_map('trim', explode(',', $format['format']));
+        foreach ($formatRows as $formatRow) {
+            $explodedFormats[] = array_map('trim', explode(',', $formatRow['format']));
         }
 
         $allFormats = array_merge(...$explodedFormats);
@@ -194,6 +194,68 @@ readonly class AlbumReader implements AlbumReaderInterface
         if (isset($statGroup[''])) {
             $statGroup['Unknown'] = $statGroup[''];
             unset($statGroup['']);
+        }
+    }
+
+    public function findAllByOwnerUuid(Uuid $ownerUuid): iterable
+    {
+        $conn = $this->entityManager->getConnection();
+
+        $result = $conn->executeQuery(
+            'SELECT
+            a.uuid as album_uuid, a.title, a.artist, a.release_year, a.format, a.genre, a.label, a.cover_url,
+            a.created_at, a.updated_at, a.is_favorite, e.uuid as external_reference_uuid, e.platform, e.metadata
+            FROM album a
+            LEFT JOIN external_reference e ON a.uuid = e.album_uuid
+            WHERE a.owner_uuid = :ownerUuid
+            /* Orders by album UUID to group external references per album */
+            ORDER BY a.uuid;
+            ',
+            ['ownerUuid' => $ownerUuid]
+        );
+
+        $currentCollection = null;
+
+        foreach ($result->iterateAssociative() as $row) {
+            // Current album is complete — yield it and move to the next one.
+            if (null !== $currentCollection && $currentCollection['albumUuid'] !== $row['album_uuid']) {
+                yield $currentCollection;
+                // Reset for the next album.
+                $currentCollection = null;
+            }
+
+            // Start a new album entry.
+            if (null === $currentCollection) {
+                $currentCollection = [
+                    'albumUuid' => $row['album_uuid'],
+                    'title' => $row['title'],
+                    'artist' => $row['artist'],
+                    'releaseYear' => $row['release_year'],
+                    'format' => $row['format'],
+                    'genre' => $row['genre'],
+                    'label' => $row['label'],
+                    'coverUrl' => $row['cover_url'],
+                    'createdAt' => $row['created_at'],
+                    'updatedAt' => $row['updated_at'],
+                    'isFavorite' => $row['is_favorite'],
+                ];
+
+                $currentCollection['externalReferences'] = [];
+            }
+
+            // Append external reference to the current album.
+            if (null !== $row['external_reference_uuid']) {
+                $currentCollection['externalReferences'][] = [
+                    'referenceUuid' => $row['external_reference_uuid'],
+                    'platform' => $row['platform'],
+                    'metadata' => $row['metadata'],
+                ];
+            }
+        }
+
+        // Yield the last album (no next row to trigger the yield above).
+        if (null !== $currentCollection) {
+            yield $currentCollection;
         }
     }
 }

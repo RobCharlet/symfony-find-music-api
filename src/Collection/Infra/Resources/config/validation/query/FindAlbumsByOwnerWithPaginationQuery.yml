@@ -1,4 +1,4 @@
-App\Collection\App\Query\FindAlbumsByOwnerQuery:
+App\Collection\App\Query\FindAlbumsByOwnerWithPaginationQuery:
     properties:
         ownerUuid:
             - NotNull: ~

@@ -1,11 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Collection\UI\Controller;
 
-use App\Collection\App\Query\FindAlbumsByOwnerQuery;
+use App\Collection\App\Query\FindAlbumsByOwnerWithPaginationQuery;
+use App\Collection\App\Query\FindCollectionByOwnerQuery;
 use App\Collection\App\Query\GetStatsByOwnerQuery;
+use App\Collection\UI\Exception\InvalidExportFormatException;
+use App\Collection\UI\Exporter\CsvCollectionExporter;
 use App\Collection\UI\RestNormalizer\AlbumNormalizer;
 use App\Shared\App\DTO\PaginationDTO;
 use App\Shared\UI\Controller\UserAuthorizationTrait;
@@ -15,6 +16,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedJsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,6 +27,53 @@ use Symfony\Component\Uid\Uuid;
 class CollectionController extends AbstractController
 {
     use UserAuthorizationTrait;
+
+    #[Route('/owner/{uuid}/export', name: 'collection_export', methods: ['GET'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'Owner UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Parameter(
+        name: 'format',
+        description: 'Export format',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'string', enum: ['json', 'csv'], default: 'json')
+    )]
+    #[OA\Response(response: 200, description: 'Returns the full collection as JSON stream or CSV file')]
+    #[OA\Response(response: 400, description: 'Invalid export format')]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[Security(name: 'Bearer')]
+    public function export(
+        CsvCollectionExporter $exporter,
+        MessageBusInterface $queryBus,
+        Request $request,
+        Uuid $uuid,
+    ): Response|StreamedResponse|StreamedJsonResponse {
+        $userAuthorization = $this->getUserAuthorization();
+        $format = $request->query->getString('format') ?: 'json';
+
+        $query = FindCollectionByOwnerQuery::withOwnerUuid(
+            $uuid,
+            $userAuthorization->userUuid,
+            $userAuthorization->isAdmin
+        );
+
+        $envelope = $queryBus->dispatch($query);
+        $collection = $envelope->last(HandledStamp::class)->getResult();
+
+        return match ($format) {
+            'json' => new StreamedJsonResponse([
+                'data' => $collection,
+            ]),
+            'csv' => $exporter->streamCollectionAsCsv($collection),
+            default => throw new InvalidExportFormatException(),
+        };
+    }
 
     #[Route('/owner/{uuid}', name: 'collection_owner_find', requirements: ['_format' => 'json'], methods: ['GET'])]
     #[OA\Parameter(
@@ -58,7 +108,7 @@ class CollectionController extends AbstractController
 
         $userAuthorization = $this->getUserAuthorization();
 
-        $query = FindAlbumsByOwnerQuery::withOwnerUuid(
+        $query = FindAlbumsByOwnerWithPaginationQuery::withOwnerUuid(
             $uuid,
             $userAuthorization->userUuid,
             $userAuthorization->isAdmin,

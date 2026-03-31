@@ -6,6 +6,7 @@ use App\Collection\Domain\Exception\AlbumNotFoundException;
 use App\Collection\Domain\Exception\ExternalReferenceNotFoundException;
 use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\UI\EventListener\ExceptionListener;
+use App\Collection\UI\Exception\InvalidExportFormatException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -91,6 +92,23 @@ class ExceptionListenerTest extends TestCase
         $data = json_decode($response->getContent(), true);
         $this->assertSame('forbidden', $data['type']);
         $this->assertSame(403, $data['status']);
+    }
+
+    #[Test]
+    public function invalidExportFormatReturns400WithCoherentBody(): void
+    {
+        $event = $this->createEvent(new InvalidExportFormatException());
+
+        $this->listener->onExceptionEvent($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame('application/problem+json', $response->headers->get('Content-Type'));
+
+        $data = json_decode($response->getContent(), true);
+        $this->assertSame('invalid_format', $data['type']);
+        $this->assertSame(400, $data['status']);
     }
 
     #[Test]

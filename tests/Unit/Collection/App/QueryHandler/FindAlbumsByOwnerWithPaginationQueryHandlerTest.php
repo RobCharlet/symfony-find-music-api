@@ -2,8 +2,8 @@
 
 namespace App\Tests\Unit\Collection\App\QueryHandler;
 
-use App\Collection\App\Query\FindAlbumsByOwnerQuery;
-use App\Collection\App\QueryHandler\FindAlbumsByOwnerQueryHandler;
+use App\Collection\App\Query\FindAlbumsByOwnerWithPaginationQuery;
+use App\Collection\App\QueryHandler\FindAlbumsByOwnerWithPaginationQueryHandler;
 use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\Domain\PaginatorInterface;
 use App\Collection\Domain\Repository\AlbumReaderInterface;
@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\UuidV7;
 
-class FindAlbumsByOwnerQueryHandlerTest extends TestCase
+class FindAlbumsByOwnerWithPaginationQueryHandlerTest extends TestCase
 {
     #[Test]
     public function findAlbumsByOwnerQueryHandlerReturnPaginator(): void
@@ -20,7 +20,7 @@ class FindAlbumsByOwnerQueryHandlerTest extends TestCase
         $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
         $requesterUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
 
-        $query = FindAlbumsByOwnerQuery::withOwnerUuid(
+        $query = FindAlbumsByOwnerWithPaginationQuery::withOwnerUuid(
             $ownerUuid,
             $requesterUuid,
             false
@@ -30,12 +30,12 @@ class FindAlbumsByOwnerQueryHandlerTest extends TestCase
 
         $mockAlbumReader
             ->expects($this->once())
-            ->method('findAllByOwnerUuid')
+            ->method('findAllByOwnerUuidWithPagination')
             ->with($ownerUuid, 1, 50, null, null, null, null)
             ->willReturn($stubPaginator);
 
         // Act
-        $handler = new FindAlbumsByOwnerQueryHandler($mockAlbumReader);
+        $handler = new FindAlbumsByOwnerWithPaginationQueryHandler($mockAlbumReader);
         $result = $handler($query);
 
         // Assert
@@ -49,7 +49,7 @@ class FindAlbumsByOwnerQueryHandlerTest extends TestCase
         $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
         $requesterUuid = UuidV7::fromString('019cba11-cd78-7ffa-8133-66be4c2ac39a');
 
-        $query = FindAlbumsByOwnerQuery::withOwnerUuid(
+        $query = FindAlbumsByOwnerWithPaginationQuery::withOwnerUuid(
             $ownerUuid,
             $requesterUuid,
             false
@@ -61,7 +61,7 @@ class FindAlbumsByOwnerQueryHandlerTest extends TestCase
         $this->expectException(OwnershipForbiddenException::class);
 
         // Act
-        $handler = new FindAlbumsByOwnerQueryHandler($stubAlbumReader);
+        $handler = new FindAlbumsByOwnerWithPaginationQueryHandler($stubAlbumReader);
         $handler($query);
     }
 }

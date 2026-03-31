@@ -5,6 +5,7 @@ namespace App\Collection\UI\EventListener;
 use App\Collection\Domain\Exception\AlbumNotFoundException;
 use App\Collection\Domain\Exception\ExternalReferenceNotFoundException;
 use App\Collection\Domain\Exception\OwnershipForbiddenException;
+use App\Collection\UI\Exception\InvalidExportFormatException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -67,6 +68,19 @@ final class ExceptionListener
             if (null !== $response) {
                 $event->setResponse($response);
             }
+        }
+
+        if ($exception instanceof InvalidExportFormatException) {
+            $event->setResponse(new JsonResponse(
+                [
+                    'type' => 'invalid_format',
+                    'title' => 'Bad Request',
+                    'status' => Response::HTTP_BAD_REQUEST,
+                    'detail' => 'Invalid export format.',
+                ],
+                Response::HTTP_BAD_REQUEST,
+                ['Content-Type' => 'application/problem+json']
+            ));
         }
     }
 }

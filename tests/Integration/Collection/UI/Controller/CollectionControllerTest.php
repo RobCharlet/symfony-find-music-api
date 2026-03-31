@@ -229,4 +229,91 @@ class CollectionControllerTest extends ControllerTestCase
 
         $this->assertResponseStatusCodeSame(403);
     }
+
+    #[Test]
+    public function exportCollectionAsJsonReturnsStreamedJson()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'exportjson@test.com');
+        $this->createAlbumOwnedBy($user);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'/export?format=json');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
+        $this->assertArrayHasKey('data', $data);
+        $this->assertCount(1, $data['data']);
+        $this->assertSame('Animal Magic', $data['data'][0]['title']);
+        $this->assertSame('Bonobo', $data['data'][0]['artist']);
+        $this->assertArrayHasKey('externalReferences', $data['data'][0]);
+    }
+
+    #[Test]
+    public function exportCollectionAsCsvReturnsStreamedCsv()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'exportcsv@test.com');
+        $this->createAlbumOwnedBy($user);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'/export?format=csv');
+
+        $this->assertResponseIsSuccessful();
+
+        $this->assertStringContainsString('text/csv', $client->getResponse()->headers->get('Content-Type'));
+
+        $content = $client->getInternalResponse()->getContent();
+        $lines = explode("\n", trim($content));
+        $this->assertCount(2, $lines);
+        $this->assertStringContainsString('album_uuid', $lines[0]);
+        $this->assertStringContainsString('Animal Magic', $lines[1]);
+        $this->assertStringContainsString('Bonobo', $lines[1]);
+    }
+
+    #[Test]
+    public function exportCollectionDefaultsToJson()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'exportdefault@test.com');
+        $this->createAlbumOwnedBy($user);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'/export');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
+    #[Test]
+    public function exportCollectionWithInvalidFormatReturns400()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'exportbad@test.com');
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'/export?format=xml');
+
+        $this->assertResponseStatusCodeSame(400);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('invalid_format', $data['type']);
+    }
+
+    #[Test]
+    public function exportCollectionUnauthenticatedReturns401()
+    {
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+
+        $client->request('GET', '/api/collections/owner/019c2e97-8e0e-776c-bf55-76a2765e369d/export');
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    #[Test]
+    public function exportCollectionByDifferentUserReturns403()
+    {
+        [$ownerClient, $owner] = $this->createAuthenticatedClientWithUser(email: 'exportowner@test.com');
+        $this->createAlbumOwnedBy($owner);
+
+        [$otherClient] = $this->createAuthenticatedClientWithUser(email: 'exportother@test.com');
+
+        $otherClient->request('GET', '/api/collections/owner/'.$owner->getUuid().'/export');
+
+        $this->assertResponseStatusCodeSame(403);
+    }
 }

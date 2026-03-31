@@ -1,0 +1,9 @@
+App\Collection\App\Query\FindCollectionByOwnerQuery:
+    properties:
+        ownerUuid:
+            - NotNull: ~
+        requesterUuid:
+            - NotNull: ~
+        isAdmin:
+            - Type: bool
+            - NotNull: ~

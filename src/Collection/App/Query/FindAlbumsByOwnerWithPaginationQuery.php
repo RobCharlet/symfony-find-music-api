@@ -4,7 +4,7 @@ namespace App\Collection\App\Query;
 
 use Symfony\Component\Uid\Uuid;
 
-final readonly class FindAlbumsByOwnerQuery
+final readonly class FindAlbumsByOwnerWithPaginationQuery
 {
     public function __construct(
         public Uuid $ownerUuid,
