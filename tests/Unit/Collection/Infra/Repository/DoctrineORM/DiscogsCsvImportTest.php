@@ -85,7 +85,56 @@ class DiscogsCsvImportTest extends TestCase
     }
 
     #[Test]
-    public function throwableInLoopLogsRowError(): void
+    public function fopenFailureThrowsRuntimeException(): void
+    {
+        $logger = $this->createStub(LoggerInterface::class);
+        $importer = $this->createImporter($logger);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to open CSV file.');
+
+        $importer->import('/nonexistent/path/to/file.csv', UuidV7::v7());
+    }
+
+    #[Test]
+    public function errorInLoopBubblesUp(): void
+    {
+        $csv = "title,artist,released,format,label,release_id\n\"Paranoid\",\"Black Sabbath\",\"1970\",\"Vinyl\",\"Vertigo\",\"12345\"\n";
+        $file = $this->tmpDir.'/error_bubble.csv';
+        file_put_contents($file, $csv);
+
+        $connection = $this->createStub(Connection::class);
+        $connection->method('isTransactionActive')->willReturn(false);
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('getConnection')->willReturn($connection);
+
+        $externalRefReader = $this->createStub(ExternalReferenceReaderInterface::class);
+        $externalRefReader->method('existsByOwnerPlatformExternalId')->willReturn(false);
+
+        $albumWriter = $this->createStub(AlbumWriterInterface::class);
+        $albumWriter->method('save')->willThrowException(new \TypeError('Unexpected null value'));
+
+        $importer = new DiscogsCsvImport(
+            $albumWriter,
+            $entityManager,
+            $externalRefReader,
+            $this->createStub(ExternalReferenceWriterInterface::class),
+            $this->createStub(LoggerInterface::class),
+        );
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Unexpected null value');
+
+        try {
+            $importer->import($file, UuidV7::v7());
+        } finally {
+            unlink($file);
+        }
+    }
+
+    #[Test]
+    public function exceptionInLoopLogsRowError(): void
     {
         $csv = "title,artist,released,format,label,release_id\n\"Paranoid\",\"Black Sabbath\",\"1970\",\"Vinyl\",\"Vertigo\",\"12345\"\n";
         $file = $this->tmpDir.'/throwable.csv';

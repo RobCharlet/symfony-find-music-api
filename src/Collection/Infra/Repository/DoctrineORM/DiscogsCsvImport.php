@@ -42,7 +42,13 @@ readonly class DiscogsCsvImport implements CsvImportInterface
         ];
 
         // Normalize CSV header
-        $csvFile = fopen($filePath, 'r');
+        // @ suppresses the redundant E_WARNING — we handle failure explicitly below.
+        $csvFile = @fopen($filePath, 'r');
+
+        if (false === $csvFile) {
+            throw new \RuntimeException('Failed to open CSV file.');
+        }
+
         $csvHeader = fgetcsv(
             stream: $csvFile,
             escape: ''
@@ -165,7 +171,7 @@ readonly class DiscogsCsvImport implements CsvImportInterface
 
                 $this->entityManager->commit();
                 ++$results['imported'];
-            } catch (\Throwable $e) {
+            } catch (\Exception $e) {
                 if ($dbConnection->isTransactionActive()) {
                     $this->entityManager->rollback();
                 }
