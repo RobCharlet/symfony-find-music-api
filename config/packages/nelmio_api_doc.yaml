@@ -51,6 +51,14 @@ nelmio_api_doc:
                         type: string
                         nullable: true
                         example: electronica
+                Search:
+                    name: search
+                    in: query
+                    description: 'Full-text search on title, artist and label using PostgreSQL websearch_to_tsquery. Supports natural language operators: quotes for exact phrases ("blue train"), minus to exclude (-live), OR for alternatives (vinyl OR cd). Results are ranked by relevance when search is active.'
+                    schema:
+                        type: string
+                        nullable: true
+                        example: coltrane
 
             securitySchemes:
                 Bearer:

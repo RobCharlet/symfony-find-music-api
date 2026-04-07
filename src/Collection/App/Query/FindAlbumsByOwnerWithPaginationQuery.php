@@ -16,6 +16,7 @@ final readonly class FindAlbumsByOwnerWithPaginationQuery
         public ?string $sortOrder,
         public ?bool $isFavorite,
         public ?string $genre,
+        public ?string $search,
     ) {
     }
 
@@ -29,6 +30,7 @@ final readonly class FindAlbumsByOwnerWithPaginationQuery
         ?string $sortOrder = null,
         ?bool $isFavorite = null,
         ?string $genre = null,
+        ?string $search = null,
     ): self {
         return new self(
             $ownerUuid,
@@ -39,7 +41,8 @@ final readonly class FindAlbumsByOwnerWithPaginationQuery
             $sortBy,
             $sortOrder,
             $isFavorite,
-            $genre
+            $genre,
+            $search
         );
     }
 }

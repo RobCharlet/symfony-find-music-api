@@ -31,7 +31,7 @@ class FindAlbumsByOwnerWithPaginationQueryHandlerTest extends TestCase
         $mockAlbumReader
             ->expects($this->once())
             ->method('findAllByOwnerUuidWithPagination')
-            ->with($ownerUuid, 1, 50, null, null, null, null)
+            ->with($ownerUuid, 1, 50, null, null, null, null, null)
             ->willReturn($stubPaginator);
 
         // Act

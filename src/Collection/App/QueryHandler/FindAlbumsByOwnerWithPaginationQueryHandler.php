@@ -29,7 +29,8 @@ final readonly class FindAlbumsByOwnerWithPaginationQueryHandler
             $query->sortBy,
             $query->sortOrder,
             $query->isFavorite,
-            $query->genre
+            $query->genre,
+            $query->search
         );
     }
 }

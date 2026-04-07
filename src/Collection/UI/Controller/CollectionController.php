@@ -41,7 +41,7 @@ class CollectionController extends AbstractController
         description: 'Export format',
         in: 'query',
         required: false,
-        schema: new OA\Schema(type: 'string', enum: ['json', 'csv'], default: 'json')
+        schema: new OA\Schema(type: 'string', default: 'json', enum: ['json', 'csv'])
     )]
     #[OA\Response(response: 200, description: 'Returns the full collection as JSON stream or CSV file')]
     #[OA\Response(response: 400, description: 'Invalid export format')]
@@ -89,6 +89,7 @@ class CollectionController extends AbstractController
     #[OA\Parameter(ref: '#/components/parameters/SortOrder')]
     #[OA\Parameter(ref: '#/components/parameters/isFavorite')]
     #[OA\Parameter(ref: '#/components/parameters/Genre')]
+    #[OA\Parameter(ref: '#/components/parameters/Search')]
     #[OA\Response(response: 200, description: 'Returns albums of an owner', content: new OA\JsonContent(ref: '#/components/schemas/PaginatedAlbumResponse'))]
     #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
     #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
@@ -105,6 +106,7 @@ class CollectionController extends AbstractController
         $sortOrder = strtoupper($request->query->getString('sort_order')) ?: null;
         $isFavorite = $request->query->has('isFavorite') ? $request->query->getBoolean('isFavorite') : null;
         $genre = $request->query->getString('genre') ?: null;
+        $search = $request->query->getString('search') ?: null;
 
         $userAuthorization = $this->getUserAuthorization();
 
@@ -117,7 +119,8 @@ class CollectionController extends AbstractController
             $sortBy,
             $sortOrder,
             $isFavorite,
-            $genre
+            $genre,
+            $search,
         );
 
         $envelope = $queryBus->dispatch($query);

@@ -316,4 +316,79 @@ class CollectionControllerTest extends ControllerTestCase
 
         $this->assertResponseStatusCodeSame(403);
     }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithSearchReturnsMatchingAlbums()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'search@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Blue Train', 'artist' => 'John Coltrane', 'label' => 'Blue Note']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Kind of Blue', 'artist' => 'Miles Davis', 'label' => 'Columbia']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack', 'label' => 'Virgin']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=coltrane');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Blue Train', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithSearchReturnsEmptyWhenNoMatch()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'searchnomatch@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=coltrane');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(0, $paginator['pagination']['totalItems']);
+        $this->assertCount(0, $paginator['data']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithSearchAndSortByReturns422()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'searchandsort@test.com');
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=coltrane&sort_by=title');
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('violations', $data);
+        $this->assertSame('sortBy', $data['violations'][0]['field']);
+        $this->assertSame('Cannot be combined with search.', $data['violations'][0]['message']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithSearchAndSortOrderReturns422()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'searchandsortorder@test.com');
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=coltrane&sort_order=DESC');
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('violations', $data);
+        $fields = array_column($data['violations'], 'field');
+        $this->assertContains('sortOrder', $fields);
+        $sortOrderViolation = $data['violations'][array_search('sortOrder', $fields)];
+        $this->assertSame('Cannot be combined with search.', $sortOrderViolation['message']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithSearchOnLabelReturnsMatchingAlbums()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'searchlabel@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Blue Train', 'artist' => 'John Coltrane', 'label' => 'Blue Note']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Kind of Blue', 'artist' => 'Miles Davis', 'label' => 'Columbia']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=columbia');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Kind of Blue', $paginator['data'][0]['title']);
+    }
 }

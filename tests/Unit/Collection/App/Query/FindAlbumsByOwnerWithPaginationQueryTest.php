@@ -24,7 +24,8 @@ class FindAlbumsByOwnerWithPaginationQueryTest extends TestCase
             'title',
             'desc',
             false,
-            'rock'
+            'rock',
+            'coltrane'
         );
 
         $this->assertSame($uuid, $query->ownerUuid);
@@ -36,5 +37,21 @@ class FindAlbumsByOwnerWithPaginationQueryTest extends TestCase
         $this->assertSame('desc', $query->sortOrder);
         $this->assertSame(false, $query->isFavorite);
         $this->assertSame('rock', $query->genre);
+        $this->assertSame('coltrane', $query->search);
+    }
+
+    #[Test]
+    public function findAlbumQueryIsCreatedWithSearchDefaultsToNull()
+    {
+        $uuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+        $requesterUuid = UuidV7::fromString('019cba11-cd78-7ffa-8133-66be4c2ac39a');
+
+        $query = FindAlbumsByOwnerWithPaginationQuery::withOwnerUuid(
+            $uuid,
+            $requesterUuid,
+            false,
+        );
+
+        $this->assertNull($query->search);
     }
 }

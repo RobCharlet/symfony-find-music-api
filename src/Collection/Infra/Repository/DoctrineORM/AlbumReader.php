@@ -67,6 +67,7 @@ readonly class AlbumReader implements AlbumReaderInterface
         ?string $sortOrder,
         ?bool $isFavorite,
         ?string $genre,
+        ?string $search,
     ): PaginatorInterface {
         $qb = $this->entityManager
             ->createQueryBuilder()
@@ -87,17 +88,24 @@ readonly class AlbumReader implements AlbumReaderInterface
                 ->setParameter('genre', $genre);
         }
 
-        $sortBy = null !== $sortBy ? trim($sortBy) : null;
-        $sortOrder = null !== $sortOrder ? trim($sortOrder) : 'ASC';
-
-        if ($sortBy && !array_key_exists($sortBy, self::SORT_COLUMN_MAP)) {
-            throw new \InvalidArgumentException('Invalid sortBy: '.$sortBy);
-        }
-
-        if ($sortBy && $sortOrder) {
-            $qb->orderBy(self::SORT_COLUMN_MAP[$sortBy], SortDirectionEnum::from($sortOrder)->value);
+        if (null !== $search) {
+            // ALBUM_SEARCH_MATCH DQL custom function needs to be compared in Doctrine. So we compare it with true.
+            $qb->andWhere('ALBUM_SEARCH_MATCH(:search) = true')
+                ->setParameter('search', $search)
+                ->orderBy('ALBUM_SEARCH_RANK(:search)', 'DESC');
         } else {
-            $qb->orderBy('a.uuid', $sortOrder);
+            $sortBy = null !== $sortBy ? trim($sortBy) : null;
+            $sortOrder = null !== $sortOrder ? trim($sortOrder) : 'ASC';
+
+            if ($sortBy && !array_key_exists($sortBy, self::SORT_COLUMN_MAP)) {
+                throw new \InvalidArgumentException('Invalid sortBy: '.$sortBy);
+            }
+
+            if ($sortBy && $sortOrder) {
+                $qb->orderBy(self::SORT_COLUMN_MAP[$sortBy], SortDirectionEnum::from($sortOrder)->value);
+            } else {
+                $qb->orderBy('a.uuid', $sortOrder);
+            }
         }
 
         $paginator = new Paginator(new QueryAdapter($qb->getQuery()));

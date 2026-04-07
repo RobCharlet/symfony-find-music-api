@@ -20,3 +20,10 @@ App\Collection\App\Query\FindAlbumsByOwnerWithPaginationQuery:
                   type: boolean
         genre:
             - Type: string
+        search:
+            - Type: string
+            - NotBlank:
+                  allowNull: true
+    # Custom validation
+    constraints:
+        - App\Collection\Infra\Validator\SearchAndSortIncompatible: ~

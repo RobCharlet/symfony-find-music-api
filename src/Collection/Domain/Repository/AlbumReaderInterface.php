@@ -22,6 +22,7 @@ interface AlbumReaderInterface
         ?string $sortOrder,
         ?bool $isFavorite,
         ?string $genre,
+        ?string $search,
     ): PaginatorInterface;
 
     public function findStatsByOwnerUuid(Uuid $ownerUuid): array;
