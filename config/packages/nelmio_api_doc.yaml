@@ -51,6 +51,46 @@ nelmio_api_doc:
                         type: string
                         nullable: true
                         example: electronica
+                Artist:
+                    name: artist
+                    in: query
+                    description: Filter by artist
+                    schema:
+                        type: string
+                        nullable: true
+                        example: John Coltrane
+                Label:
+                    name: label
+                    in: query
+                    description: Filter by label
+                    schema:
+                        type: string
+                        nullable: true
+                        example: Impulse!
+                Format:
+                    name: format
+                    in: query
+                    description: Filter by format
+                    schema:
+                        type: string
+                        nullable: true
+                        example: CD
+                YearFrom:
+                    name: year_from
+                    in: query
+                    description: Filter from year (inclusive)
+                    schema:
+                        type: integer
+                        nullable: true
+                        example: 1956
+                YearTo:
+                    name: year_to
+                    in: query
+                    description: Filter to year (inclusive)
+                    schema:
+                        type: integer
+                        nullable: true
+                        example: 2018
                 Search:
                     name: search
                     in: query

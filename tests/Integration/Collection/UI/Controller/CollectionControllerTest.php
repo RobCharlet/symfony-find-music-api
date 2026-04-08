@@ -391,4 +391,141 @@ class CollectionControllerTest extends ControllerTestCase
         $this->assertSame(1, $paginator['pagination']['totalItems']);
         $this->assertSame('Kind of Blue', $paginator['data'][0]['title']);
     }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByArtist()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filterartist@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?artist=Bonobo');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Black Sands', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByFormat()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filterformat@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Dummy', 'artist' => 'Portishead', 'format' => 'CD']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Third', 'artist' => 'Portishead', 'format' => 'Vinyle']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?format=CD');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Dummy', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByLabel()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filterlabel@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Geogaddi', 'artist' => 'Boards of Canada', 'label' => 'Warp']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo', 'label' => 'Ninja Tune']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?label=Warp');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Geogaddi', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByYearFrom()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filteryearfrom@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo', 'releaseYear' => 2000]);
+        $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo', 'releaseYear' => 2010]);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?year_from=2005');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Black Sands', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByYearTo()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filteryearto@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo', 'releaseYear' => 2000]);
+        $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo', 'releaseYear' => 2010]);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?year_to=2005');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Animal Magic', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByYearRange()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filteryearrange@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Dummy', 'artist' => 'Portishead', 'releaseYear' => 1994]);
+        $this->createAlbumOwnedBy($user, ['title' => 'Geogaddi', 'artist' => 'Boards of Canada', 'releaseYear' => 2002]);
+        $this->createAlbumOwnedBy($user, ['title' => 'Tomorrow\'s Harvest', 'artist' => 'Boards of Canada', 'releaseYear' => 2013]);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?year_from=2000&year_to=2010');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Geogaddi', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByArtistAndGenre()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filtercombined@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo', 'genre' => 'Downtempo']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo', 'genre' => 'Trip Hop']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack', 'genre' => 'Trip Hop']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?artist=Bonobo&genre=Downtempo');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Black Sands', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredBySearchAndArtist()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filtersearchartist@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Blue Train', 'artist' => 'John Coltrane', 'label' => 'Blue Note']);
+        $this->createAlbumOwnedBy($user, ['title' => 'Kind of Blue', 'artist' => 'Miles Davis', 'label' => 'Columbia']);
+        $this->createAlbumOwnedBy($user, ['title' => 'A Love Supreme', 'artist' => 'John Coltrane', 'label' => 'Impulse!']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=blue&artist=John Coltrane');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, $paginator['pagination']['totalItems']);
+        $this->assertSame('Blue Train', $paginator['data'][0]['title']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidFilteredByNonExistentArtistReturnsEmpty()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'filternoartist@test.com');
+        $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo']);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?artist=Radiohead');
+        $paginator = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(0, $paginator['pagination']['totalItems']);
+        $this->assertCount(0, $paginator['data']);
+    }
 }

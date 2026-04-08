@@ -68,6 +68,11 @@ readonly class AlbumReader implements AlbumReaderInterface
         ?bool $isFavorite,
         ?string $genre,
         ?string $search,
+        ?string $artist,
+        ?string $format,
+        ?string $label,
+        ?int $yearFrom,
+        ?int $yearTo,
     ): PaginatorInterface {
         $qb = $this->entityManager
             ->createQueryBuilder()
@@ -86,6 +91,31 @@ readonly class AlbumReader implements AlbumReaderInterface
         if (null !== $genre) {
             $qb->andWhere('a.genre = :genre')
                 ->setParameter('genre', $genre);
+        }
+
+        if (null !== $artist) {
+            $qb->andWhere('a.artist = :artist')
+                ->setParameter('artist', $artist);
+        }
+
+        if (null !== $label) {
+            $qb->andWhere('a.label = :label')
+                ->setParameter('label', $label);
+        }
+
+        if (null !== $format) {
+            $qb->andWhere('a.format = :format')
+                ->setParameter('format', $format);
+        }
+
+        if (null !== $yearFrom) {
+            $qb->andWhere('a.releaseYear >= :yearFrom')
+                ->setParameter('yearFrom', $yearFrom);
+        }
+
+        if (null !== $yearTo) {
+            $qb->andWhere('a.releaseYear <= :yearTo')
+                ->setParameter('yearTo', $yearTo);
         }
 
         if (null !== $search) {

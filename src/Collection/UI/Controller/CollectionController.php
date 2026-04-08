@@ -90,6 +90,11 @@ class CollectionController extends AbstractController
     #[OA\Parameter(ref: '#/components/parameters/isFavorite')]
     #[OA\Parameter(ref: '#/components/parameters/Genre')]
     #[OA\Parameter(ref: '#/components/parameters/Search')]
+    #[OA\Parameter(ref: '#/components/parameters/Artist')]
+    #[OA\Parameter(ref: '#/components/parameters/Format')]
+    #[OA\Parameter(ref: '#/components/parameters/Label')]
+    #[OA\Parameter(ref: '#/components/parameters/YearFrom')]
+    #[OA\Parameter(ref: '#/components/parameters/YearTo')]
     #[OA\Response(response: 200, description: 'Returns albums of an owner', content: new OA\JsonContent(ref: '#/components/schemas/PaginatedAlbumResponse'))]
     #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
     #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
@@ -110,6 +115,11 @@ class CollectionController extends AbstractController
         ;
         $genre = $request->query->getString('genre') ?: null;
         $search = $request->query->getString('search') ?: null;
+        $artist = $request->query->getString('artist') ?: null;
+        $format = $request->query->getString('format') ?: null;
+        $label = $request->query->getString('label') ?: null;
+        $yearFrom = (int) $request->query->get('year_from') ?: null;
+        $yearTo = (int) $request->query->get('year_to') ?: null;
 
         $userAuthorization = $this->getUserAuthorization();
 
@@ -124,6 +134,11 @@ class CollectionController extends AbstractController
             $isFavorite,
             $genre,
             $search,
+            $artist,
+            $format,
+            $label,
+            $yearFrom,
+            $yearTo,
         );
 
         $envelope = $queryBus->dispatch($query);

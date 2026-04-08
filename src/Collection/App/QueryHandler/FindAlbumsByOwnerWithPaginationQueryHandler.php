@@ -30,7 +30,12 @@ final readonly class FindAlbumsByOwnerWithPaginationQueryHandler
             $query->sortOrder,
             $query->isFavorite,
             $query->genre,
-            $query->search
+            $query->search,
+            $query->artist,
+            $query->format,
+            $query->label,
+            $query->yearFrom,
+            $query->yearTo,
         );
     }
 }

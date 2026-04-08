@@ -24,6 +24,18 @@ App\Collection\App\Query\FindAlbumsByOwnerWithPaginationQuery:
             - Type: string
             - NotBlank:
                   allowNull: true
+        artist:
+            - Type: string
+        label:
+            - Type: string
+        format:
+            - Type: string
+        yearFrom:
+            - Type: integer
+            - Range: { min: 1900, max: 2100 }
+        yearTo:
+            - Type: integer
+            - Range: { min: 1900, max: 2100 }
     # Custom validation
     constraints:
         - App\Collection\Infra\Validator\SearchAndSortIncompatible: ~
