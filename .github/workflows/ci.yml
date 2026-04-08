@@ -63,6 +63,6 @@ jobs:
           mkdir -p config/jwt/test
           php bin/console lexik:jwt:generate-keypair --env=test --skip-if-exists --no-interaction
           php bin/console doctrine:database:create --if-not-exists --env=test --no-interaction
-          php bin/console doctrine:schema:create --env=test --no-interaction
+          php bin/console doctrine:migrations:migrate --env=test --no-interaction
       - name: Run PHPUnit
         run: vendor/bin/phpunit tests/Integration
