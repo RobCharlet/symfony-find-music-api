@@ -85,6 +85,42 @@ class DiscogsCsvImportTest extends TestCase
     }
 
     #[Test]
+    public function discogsHeadersWithMixedCaseAreNormalized(): void
+    {
+        $csv = "Catalog#,Artist,Title,Label,Format,Rating,Released,release_id,CollectionFolder,Date Added,Collection Media Condition,Collection Sleeve Condition,Collection Notes\n"
+            ."piasr 210 lp,I Am Kloot,Sky At Night,[PIAS] Recordings,\"LP, Album\",,2010,2596660,Uncategorized,2026-01-19 11:01:49,Near Mint (NM or M-),Near Mint (NM or M-),\n";
+        $file = $this->tmpDir.'/discogs_real_headers.csv';
+        file_put_contents($file, $csv);
+
+        $connection = $this->createStub(Connection::class);
+        $connection->method('isTransactionActive')->willReturn(false);
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('getConnection')->willReturn($connection);
+
+        $externalRefReader = $this->createStub(ExternalReferenceReaderInterface::class);
+        $externalRefReader->method('existsByOwnerPlatformExternalId')->willReturn(false);
+
+        $albumWriter = $this->createMock(AlbumWriterInterface::class);
+        $albumWriter->expects($this->once())->method('save');
+
+        $importer = new DiscogsCsvImport(
+            $albumWriter,
+            $entityManager,
+            $externalRefReader,
+            $this->createStub(ExternalReferenceWriterInterface::class),
+            $this->createStub(LoggerInterface::class),
+        );
+
+        $result = $importer->import($file, UuidV7::v7());
+
+        $this->assertSame(1, $result['imported']);
+        $this->assertEmpty($result['errors']);
+
+        unlink($file);
+    }
+
+    #[Test]
     public function fopenFailureThrowsRuntimeException(): void
     {
         $logger = $this->createStub(LoggerInterface::class);

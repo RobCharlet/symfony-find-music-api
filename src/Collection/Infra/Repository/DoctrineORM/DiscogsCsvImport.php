@@ -41,8 +41,7 @@ readonly class DiscogsCsvImport implements CsvImportInterface
             'errors' => [],
         ];
 
-        // Normalize CSV header
-        // @ suppresses the redundant E_WARNING — we handle failure explicitly below.
+        // Check mandatory csv headers columns
         $csvFile = @fopen($filePath, 'r');
 
         if (false === $csvFile) {
@@ -64,7 +63,6 @@ readonly class DiscogsCsvImport implements CsvImportInterface
             $csvHeader
         );
 
-        // Check mandatory columns
         $requiredColumns = ['title', 'artist', 'released', 'format', 'label', 'release_id'];
         $missingColumns = array_diff($requiredColumns, $normalizedCsvHeader);
 
@@ -84,10 +82,7 @@ readonly class DiscogsCsvImport implements CsvImportInterface
 
         // Decode CSV
         try {
-            $content = $decoder->decode(file_get_contents($filePath), 'csv', [
-                // Inject a normalized header.
-                CsvEncoder::HEADERS_KEY => $normalizedCsvHeader,
-            ]);
+            $content = $decoder->decode(file_get_contents($filePath), 'csv');
         } catch (\UnexpectedValueException $e) {
             $this->logger->warning('import.decode_error', [
                 'message' => $e->getMessage(),
@@ -96,6 +91,20 @@ readonly class DiscogsCsvImport implements CsvImportInterface
 
             return $results;
         }
+
+        // Normalize rows keys
+        $content = array_map(
+            function (array $row) {
+                return array_combine(
+                    array_map(
+                        fn (string $key) => str_replace(' ', '_', trim(strtolower($key))),
+                        array_keys($row)
+                    ),
+                    array_values($row)
+                );
+            },
+            $content
+        );
 
         foreach ($content as $index => $csvRow) {
             $platform = PlatformEnum::Discogs;
