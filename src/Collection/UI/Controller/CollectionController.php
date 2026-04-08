@@ -100,11 +100,14 @@ class CollectionController extends AbstractController
         Request $request,
         Uuid $uuid,
     ): JsonResponse {
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 50);
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, $request->query->getInt('limit', 50));
         $sortBy = $request->query->getString('sort_by') ?: null;
         $sortOrder = strtoupper($request->query->getString('sort_order')) ?: null;
-        $isFavorite = $request->query->has('isFavorite') ? $request->query->getBoolean('isFavorite') : null;
+        $isFavorite = '' !== $request->query->getString('isFavorite') ?
+            $request->query->getBoolean('isFavorite') :
+            null
+        ;
         $genre = $request->query->getString('genre') ?: null;
         $search = $request->query->getString('search') ?: null;
 

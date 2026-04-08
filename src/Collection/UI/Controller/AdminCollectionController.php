@@ -33,8 +33,8 @@ class AdminCollectionController extends AbstractController
         MessageBusInterface $queryBus,
         Request $request,
     ): JsonResponse {
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 50);
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, $request->query->getInt('limit', 50));
 
         $query = FindCollectionQuery::withPageAndLimit($page, $limit);
         $envelope = $queryBus->dispatch($query);
