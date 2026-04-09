@@ -28,9 +28,9 @@ class CollectionController extends AbstractController
 {
     use UserAuthorizationTrait;
 
-    #[Route('/owner/{uuid}/export', name: 'collection_export', methods: ['GET'])]
+    #[Route('/owner/{ownerUuid}/export', name: 'collection_owner_export', methods: ['GET'])]
     #[OA\Parameter(
-        name: 'uuid',
+        name: 'ownerUuid',
         description: 'Owner UUID',
         in: 'path',
         required: true,
@@ -52,13 +52,13 @@ class CollectionController extends AbstractController
         CsvCollectionExporter $exporter,
         MessageBusInterface $queryBus,
         Request $request,
-        Uuid $uuid,
+        Uuid $ownerUuid,
     ): Response|StreamedResponse|StreamedJsonResponse {
         $userAuthorization = $this->getUserAuthorization();
         $format = $request->query->getString('format') ?: 'json';
 
         $query = FindCollectionByOwnerQuery::withOwnerUuid(
-            $uuid,
+            $ownerUuid,
             $userAuthorization->userUuid,
             $userAuthorization->isAdmin
         );
@@ -75,10 +75,10 @@ class CollectionController extends AbstractController
         };
     }
 
-    #[Route('/owner/{uuid}', name: 'collection_owner_find', requirements: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/owner/{ownerUuid}', name: 'collection_owner_find', requirements: ['_format' => 'json'], methods: ['GET'])]
     #[OA\Parameter(
-        name: 'uuid',
-        description: 'User UUID',
+        name: 'ownerUuid',
+        description: 'Owner UUID',
         in: 'path',
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
@@ -103,7 +103,7 @@ class CollectionController extends AbstractController
         AlbumNormalizer $normalizer,
         MessageBusInterface $queryBus,
         Request $request,
-        Uuid $uuid,
+        Uuid $ownerUuid,
     ): JsonResponse {
         $page = max(1, $request->query->getInt('page', 1));
         $limit = max(1, $request->query->getInt('limit', 50));
@@ -124,7 +124,7 @@ class CollectionController extends AbstractController
         $userAuthorization = $this->getUserAuthorization();
 
         $query = FindAlbumsByOwnerWithPaginationQuery::withOwnerUuid(
-            $uuid,
+            $ownerUuid,
             $userAuthorization->userUuid,
             $userAuthorization->isAdmin,
             $page,
@@ -161,7 +161,7 @@ class CollectionController extends AbstractController
 
     #[Route(
         '/owner/{ownerUuid}/stats',
-        name: 'collection_stats_owner',
+        name: 'collection_owner_stats',
         requirements: ['_format' => 'json'],
         methods: ['GET']
     )]

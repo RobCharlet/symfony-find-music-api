@@ -29,7 +29,7 @@ class ExternalReferenceController extends AbstractController
 {
     use UserAuthorizationTrait;
 
-    #[Route('', name: 'external_reference_add', requirements: ['_format' => 'json'], methods: ['POST'])]
+    #[Route('', name: 'external_reference_create', requirements: ['_format' => 'json'], methods: ['POST'])]
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
