@@ -8,6 +8,7 @@ use App\User\App\Command\DeleteUserCommand;
 use App\User\App\Command\UpdateUserCommand;
 use App\User\App\Query\FindUserQuery;
 use App\User\Infra\Security\SecurityUser;
+use App\User\UI\DTO\AdminCreateUserPayload;
 use App\User\UI\RestNormalizer\UserNormalizer;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
@@ -15,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Routing\Attribute\Route;
@@ -42,16 +44,6 @@ class UserController extends AbstractController
     }
 
     #[Route('', name: 'user_create', methods: ['POST'])]
-    #[OA\RequestBody(
-        required: true,
-        content: new OA\JsonContent(
-            required: ['email', 'password'],
-            properties: [
-                new OA\Property(property: 'email', type: 'string'),
-                new OA\Property(property: 'password', type: 'string'),
-            ]
-        )
-    )]
     #[OA\Response(ref: '#/components/responses/Created', response: 201)]
     #[OA\Response(ref: '#/components/responses/InvalidJson', response: 400)]
     #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
@@ -60,16 +52,15 @@ class UserController extends AbstractController
     #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     public function createUser(
         MessageBusInterface $commandBus,
-        Request $request,
+        #[MapRequestPayload] AdminCreateUserPayload $payload,
     ): JsonResponse {
         $uuid = UuidV7::v7();
-        $payload = $request->toArray();
 
         $command = CreateUserCommand::forAdminCreation(
             $uuid,
-            $payload['email'],
-            $payload['password'],
-            $payload['roles'] ?? ['ROLE_USER'],
+            $payload->email,
+            $payload->password,
+            $payload->roles,
         );
 
         $commandBus->dispatch($command);

@@ -16,10 +16,15 @@ class RegistrationControllerTest extends WebTestCase
         static::ensureKernelShutdown();
         $client = static::createClient();
 
-        $client->request('POST', '/api/register', content: json_encode([
-            'email' => 'user@example.com',
-            'password' => 'securepass123',
-        ]));
+        // In tests, set CONTENT_TYPE=application/json (or use jsonRequest()) so #[MapRequestPayload] deserializes JSON.
+        $client->jsonRequest(
+            'POST',
+            '/api/register',
+            parameters: [
+                'email' => 'user@example.com',
+                'password' => 'securepass123',
+            ]
+        );
 
         $this->assertResponseStatusCodeSame(201);
         $this->assertTrue($client->getResponse()->headers->has('Location'));
@@ -38,11 +43,15 @@ class RegistrationControllerTest extends WebTestCase
         static::ensureKernelShutdown();
         $client = static::createClient();
 
-        $client->request('POST', '/api/register', content: json_encode([
-            'email' => 'hacker@example.com',
-            'password' => 'securepass123',
-            'roles' => ['ROLE_ADMIN'], // Cette propriété devrait être ignorée
-        ]));
+        $client->jsonRequest(
+            'POST',
+            '/api/register',
+            [
+                'email' => 'hacker@example.com',
+                'password' => 'securepass123',
+                'roles' => ['ROLE_ADMIN'], // Cette propriété devrait être ignorée
+            ]
+        );
 
         $this->assertResponseStatusCodeSame(201);
     }
@@ -53,10 +62,14 @@ class RegistrationControllerTest extends WebTestCase
         static::ensureKernelShutdown();
         $client = static::createClient();
 
-        $client->request('POST', '/api/register', content: json_encode([
-            'email' => 'not-an-email',
-            'password' => 'securepass123',
-        ]));
+        $client->jsonRequest(
+            'POST',
+            '/api/register',
+            [
+                'email' => 'not-an-email',
+                'password' => 'securepass123',
+            ]
+        );
 
         $this->assertResponseStatusCodeSame(422);
 
@@ -73,10 +86,14 @@ class RegistrationControllerTest extends WebTestCase
         static::ensureKernelShutdown();
         $client = static::createClient();
 
-        $client->request('POST', '/api/register', content: json_encode([
-            'email' => 'valid@example.com',
-            'password' => 'short', // Moins de 8 caractères
-        ]));
+        $client->jsonRequest(
+            'POST',
+            '/api/register',
+            [
+                'email' => 'valid@example.com',
+                'password' => 'short', // Moins de 8 caractères
+            ]
+        );
 
         $this->assertResponseStatusCodeSame(422);
 
@@ -99,10 +116,14 @@ class RegistrationControllerTest extends WebTestCase
         static::ensureKernelShutdown();
         $client = static::createClient();
 
-        $client->request('POST', '/api/register', content: json_encode([
-            'email' => 'duplicate@example.com',
-            'password' => 'anotherpassword',
-        ]));
+        $client->jsonRequest(
+            'POST',
+            '/api/register',
+            [
+                'email' => 'duplicate@example.com',
+                'password' => 'anotherpassword',
+            ]
+        );
 
         $this->assertResponseStatusCodeSame(409);
 
@@ -116,7 +137,12 @@ class RegistrationControllerTest extends WebTestCase
         static::ensureKernelShutdown();
         $client = static::createClient();
 
-        $client->request('POST', '/api/register', content: '{bad');
+        $client->request(
+            'POST',
+            '/api/register',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: '{bad'
+        );
 
         $this->assertResponseStatusCodeSame(400);
 
@@ -130,7 +156,12 @@ class RegistrationControllerTest extends WebTestCase
         static::ensureKernelShutdown();
         $client = static::createClient();
 
-        $client->request('POST', '/api/register', content: '');
+        $client->request(
+            'POST',
+            '/api/register',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: ''
+        );
 
         $this->assertResponseStatusCodeSame(400);
 
