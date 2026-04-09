@@ -28,7 +28,7 @@ class AlbumController extends AbstractController
 {
     use UserAuthorizationTrait;
 
-    #[Route('', name: 'album_add', requirements: ['_format' => 'json'], methods: ['POST'])]
+    #[Route('', name: 'album_create', requirements: ['_format' => 'json'], methods: ['POST'])]
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(

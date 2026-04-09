@@ -20,7 +20,7 @@ class DiscogsImportController extends AbstractController
     use UserAuthorizationTrait;
 
     #[OA\Tag(name: 'Albums')]
-    #[Route('/api/collections/import/discogs', name: 'api_collections_import_discogs', methods: ['POST'])]
+    #[Route('/api/collections/import/discogs', name: 'collection_import_discogs', methods: ['POST'])]
     #[OA\RequestBody(
         required: true,
         content: new OA\MediaType(
