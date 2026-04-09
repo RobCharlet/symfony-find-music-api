@@ -99,11 +99,11 @@ class UserControllerTest extends WebTestCase
     #[Test]
     public function adminCanCreateUser()
     {
-        $this->client->request('POST', '/api/users', content: json_encode([
+        $this->client->jsonRequest('POST', '/api/users', [
             'email'    => 'admin-created@example.com',
             'password' => 'password',
             'roles'    => ['ROLE_USER'],
-        ]));
+        ]);
 
         $this->assertResponseStatusCodeSame(201);
         $this->assertTrue($this->client->getResponse()->headers->has('Location'));
@@ -112,11 +112,11 @@ class UserControllerTest extends WebTestCase
     #[Test]
     public function adminCreateUserReturnsLocationHeader()
     {
-        $this->client->request('POST', '/api/users', content: json_encode([
+        $this->client->jsonRequest('POST', '/api/users', [
             'email'    => 'location-test@example.com',
             'password' => 'securepass123',
             'roles'    => ['ROLE_USER'],
-        ]));
+        ]);
 
         $this->assertResponseStatusCodeSame(201);
 

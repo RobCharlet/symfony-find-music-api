@@ -10,7 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\Messenger\Exception\ValidationFailedException;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Validator\Exception\ValidationFailedException as ValidatorValidationFailedException;
+use Symfony\Component\Messenger\Exception\ValidationFailedException as MessengerValidationFailedException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
@@ -27,10 +29,10 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  *  4. Auth / 4xx HTTP exceptions → let Symfony handle natively
  *  5. Anything else → 500 fallback
  */
-class GlobalExceptionListener
+readonly class GlobalExceptionListener
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -51,6 +53,7 @@ class GlobalExceptionListener
                 && (
                     $exception->getPrevious() instanceof \JsonException
                     || $exception->getPrevious() instanceof HttpFoundationJsonException
+                    || $exception->getPrevious() instanceof NotEncodableValueException
                     || $exception->getPrevious()?->getPrevious() instanceof \JsonException
                 ))
         ) {
@@ -74,7 +77,7 @@ class GlobalExceptionListener
             return;
         }
 
-        if ($exception instanceof ValidationFailedException) {
+        if ($exception instanceof MessengerValidationFailedException) {
             $violations = [];
             foreach ($exception->getViolations() as $violation) {
                 $violations[] = [
@@ -103,6 +106,36 @@ class GlobalExceptionListener
             return;
         }
 
+        // #[MapRequestPayload] validation failure: Symfony wraps the raw Validator
+        // ValidationFailedException inside an HttpException (422). Unwrap it and return
+        // the same 422 shape as the Messenger branch above so both validation paths
+        // (Messenger middleware + typed request payloads) yield one consistent response.
+        $previous = $exception->getPrevious();
+        if ($previous instanceof ValidatorValidationFailedException) {
+            $violations = [];
+            foreach ($previous->getViolations() as $violation) {
+                $violations[] = [
+                    'field' => $violation->getPropertyPath(),
+                    'message' => $violation->getMessage(),
+                ];
+            }
+
+            $event->setResponse(new JsonResponse(
+                [
+                    'type' => 'validation_error',
+                    'title' => 'Validation Failed',
+                    'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                    'detail' => 'One or more fields are invalid.',
+                    'violations' => $violations,
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                ['Content-Type' => 'application/problem+json']
+            ));
+
+            return;
+        }
+
+        // Skip HTTP exceptions below 500 (typically client errors), since we only handle server-side failures here.
         if ($exception instanceof HttpExceptionInterface && $exception->getStatusCode() < 500) {
             return;
         }
