@@ -101,33 +101,13 @@ class CollectionControllerTest extends ControllerTestCase
     }
 
     #[Test]
-    public function retrieveAlbumsByOwnerUuidSortedByTitleWithLowercaseDesc()
+    public function retrieveAlbumsByOwnerUuidWithLowercaseSortOrderReturns422()
     {
         [$client, $user] = $this->createAuthenticatedClientWithUser();
-        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
-        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?sort_by=title&sort_order=desc');
-        $data = json_decode($client->getResponse()->getContent(), true)['data'];
 
-        $this->assertResponseIsSuccessful();
-        $this->assertSame('Mezzanine', $data[0]['title']);
-        $this->assertSame('Animal Magic', $data[1]['title']);
-    }
-
-    #[Test]
-    public function retrieveAlbumsByOwnerUuidWithLowercaseSortOrderIsNormalized()
-    {
-        [$client, $user] = $this->createAuthenticatedClientWithUser();
-        $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
-        $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
-
-        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?sort_by=title&sort_order=asc');
-        $data = json_decode($client->getResponse()->getContent(), true)['data'];
-
-        $this->assertResponseIsSuccessful();
-        $this->assertSame('Animal Magic', $data[0]['title']);
-        $this->assertSame('Mezzanine', $data[1]['title']);
+        $this->assertResponseStatusCodeSame(422);
     }
 
     #[Test]
@@ -527,5 +507,44 @@ class CollectionControllerTest extends ControllerTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame(0, $paginator['pagination']['totalItems']);
         $this->assertCount(0, $paginator['data']);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithPageZeroReturns422()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?page=0');
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $fields = array_column($data['violations'], 'field');
+        $this->assertContains('page', $fields);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithLimitZeroReturns422()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?limit=0');
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $fields = array_column($data['violations'], 'field');
+        $this->assertContains('limit', $fields);
+    }
+
+    #[Test]
+    public function retrieveAlbumsByOwnerUuidWithEmptySortByReturns422()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?sort_by=');
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $fields = array_column($data['violations'], 'field');
+        $this->assertContains('sortBy', $fields);
     }
 }

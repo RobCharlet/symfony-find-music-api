@@ -2,6 +2,7 @@
 
 namespace App\Collection\UI\Controller;
 
+use App\Collection\App\DTO\CollectionFilters;
 use App\Collection\App\Query\FindAlbumsByOwnerWithPaginationQuery;
 use App\Collection\App\Query\FindCollectionByOwnerQuery;
 use App\Collection\App\Query\GetStatsByOwnerQuery;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedJsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Routing\Attribute\Route;
@@ -83,18 +85,6 @@ class CollectionController extends AbstractController
         required: true,
         schema: new OA\Schema(type: 'string', format: 'uuid')
     )]
-    #[OA\Parameter(ref: '#/components/parameters/Page')]
-    #[OA\Parameter(ref: '#/components/parameters/Limit')]
-    #[OA\Parameter(ref: '#/components/parameters/SortByAlbum')]
-    #[OA\Parameter(ref: '#/components/parameters/SortOrder')]
-    #[OA\Parameter(ref: '#/components/parameters/isFavorite')]
-    #[OA\Parameter(ref: '#/components/parameters/Genre')]
-    #[OA\Parameter(ref: '#/components/parameters/Search')]
-    #[OA\Parameter(ref: '#/components/parameters/Artist')]
-    #[OA\Parameter(ref: '#/components/parameters/Format')]
-    #[OA\Parameter(ref: '#/components/parameters/Label')]
-    #[OA\Parameter(ref: '#/components/parameters/YearFrom')]
-    #[OA\Parameter(ref: '#/components/parameters/YearTo')]
     #[OA\Response(response: 200, description: 'Returns albums of an owner', content: new OA\JsonContent(ref: '#/components/schemas/PaginatedAlbumResponse'))]
     #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
     #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
@@ -102,43 +92,27 @@ class CollectionController extends AbstractController
     public function findByOwner(
         AlbumNormalizer $normalizer,
         MessageBusInterface $queryBus,
-        Request $request,
         Uuid $ownerUuid,
+        #[MapQueryString] CollectionFilters $filters,
     ): JsonResponse {
-        $page = max(1, $request->query->getInt('page', 1));
-        $limit = max(1, $request->query->getInt('limit', 50));
-        $sortBy = $request->query->getString('sort_by') ?: null;
-        $sortOrder = strtoupper($request->query->getString('sort_order')) ?: null;
-        $isFavorite = '' !== $request->query->getString('isFavorite') ?
-            $request->query->getBoolean('isFavorite') :
-            null
-        ;
-        $genre = $request->query->getString('genre') ?: null;
-        $search = $request->query->getString('search') ?: null;
-        $artist = $request->query->getString('artist') ?: null;
-        $format = $request->query->getString('format') ?: null;
-        $label = $request->query->getString('label') ?: null;
-        $yearFrom = (int) $request->query->get('year_from') ?: null;
-        $yearTo = (int) $request->query->get('year_to') ?: null;
-
         $userAuthorization = $this->getUserAuthorization();
 
         $query = FindAlbumsByOwnerWithPaginationQuery::withOwnerUuid(
             $ownerUuid,
             $userAuthorization->userUuid,
             $userAuthorization->isAdmin,
-            $page,
-            $limit,
-            $sortBy,
-            $sortOrder,
-            $isFavorite,
-            $genre,
-            $search,
-            $artist,
-            $format,
-            $label,
-            $yearFrom,
-            $yearTo,
+            $filters->page,
+            $filters->limit,
+            $filters->sortBy,
+            $filters->sortOrder,
+            $filters->isFavorite,
+            $filters->genre,
+            $filters->search,
+            $filters->artist,
+            $filters->format,
+            $filters->label,
+            $filters->yearFrom,
+            $filters->yearTo,
         );
 
         $envelope = $queryBus->dispatch($query);
