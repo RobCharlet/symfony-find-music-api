@@ -20,6 +20,8 @@ final class Album
         private \DateTimeImmutable $createdAt = new \DateTimeImmutable(),
         private \DateTimeImmutable $updatedAt = new \DateTimeImmutable(),
         private iterable $externalReferences = [],
+        private ?int $rating = null,
+        private ?string $personalNote = null,
     ) {
     }
 
@@ -97,6 +99,8 @@ final class Album
         ?string $genre,
         ?string $label,
         ?string $coverUrl,
+        ?int $rating,
+        ?string $personalNote,
     ): void {
         $this->title = $title;
         $this->artist = $artist;
@@ -107,5 +111,17 @@ final class Album
         $this->label = $label;
         $this->coverUrl = $coverUrl;
         $this->updatedAt = new \DateTimeImmutable();
+        $this->rating = $rating;
+        $this->personalNote = $personalNote;
+    }
+
+    public function getRating(): ?int
+    {
+        return $this->rating;
+    }
+
+    public function getPersonalNote(): ?string
+    {
+        return $this->personalNote;
     }
 }

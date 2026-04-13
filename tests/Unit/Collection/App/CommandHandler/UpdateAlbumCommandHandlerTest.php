@@ -42,6 +42,8 @@ class UpdateAlbumCommandHandlerTest extends TestCase
             'genre' => 'Trip Hop',
             'label' => 'Ninja Tune',
             'coverUrl' => 'https://google.com/cover.jpg',
+            'rating' => 4,
+            'personalNote' => 'Un classique du trip-hop',
         ];
 
         $command = UpdateAlbumCommand::withData($uuid, $ownerUuid, false, $payload);
@@ -67,6 +69,8 @@ class UpdateAlbumCommandHandlerTest extends TestCase
                 $this->assertSame('Ninja Tune', $album->getLabel());
                 $this->assertSame('https://google.com/cover.jpg', $album->getCoverUrl());
                 $this->assertInstanceOf(\DateTimeImmutable::class, $album->getUpdatedAt());
+                $this->assertSame(4, $album->getRating());
+                $this->assertSame('Un classique du trip-hop', $album->getPersonalNote());
             });
 
         $mockLogger = $this->createMock(LoggerInterface::class);

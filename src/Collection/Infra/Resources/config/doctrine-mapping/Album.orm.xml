@@ -18,6 +18,12 @@
         <field name="coverUrl" column="cover_url" type="string" nullable="true"/>
         <field name="createdAt" column="created_at" type="datetime_immutable" nullable="false"/>
         <field name="updatedAt" column="updated_at" type="datetime_immutable" nullable="false"/>
-        <one-to-many field="externalReferences" target-entity="App\Collection\Domain\ExternalReference" mapped-by="album" />
+        <one-to-many
+            field="externalReferences"
+            target-entity="App\Collection\Domain\ExternalReference"
+            mapped-by="album"
+        />
+        <field name="rating" column="rating" type="integer" nullable="true"/>
+        <field name="personalNote" column="personal_note" type="string" nullable="true"/>
     </entity>
 </doctrine-mapping>

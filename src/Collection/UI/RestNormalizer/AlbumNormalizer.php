@@ -35,6 +35,8 @@ readonly class AlbumNormalizer implements NormalizerInterface
                 fn ($externalReference) => $this->externalReferenceNormalizer->normalize($externalReference),
                 iterator_to_array($data->getExternalReferences())
             ),
+            'rating'             => $data->getRating(),
+            'personalNote'      => $data->getPersonalNote(),
         ];
     }
 

@@ -18,6 +18,8 @@ final readonly class UpdateAlbumCommand
         public ?string $genre,
         public ?string $label,
         public ?string $coverUrl,
+        public ?int $rating,
+        public ?string $personalNote,
     ) {
     }
 
@@ -39,6 +41,8 @@ final readonly class UpdateAlbumCommand
             genre: $payload['genre'] ?? null,
             label: $payload['label'] ?? null,
             coverUrl: $payload['coverUrl'] ?? null,
+            rating: $payload['rating'] ?? null,
+            personalNote: $payload['personalNote'] ?? null,
         );
     }
 }

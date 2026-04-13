@@ -153,6 +153,8 @@ class AlbumController extends AbstractController
                 new OA\Property(property: 'format', type: 'string', nullable: true),
                 new OA\Property(property: 'label', type: 'string', nullable: true),
                 new OA\Property(property: 'coverUrl', type: 'string', nullable: true),
+                new OA\Property(property: 'rating', type: 'integer', nullable: true),
+                new OA\Property(property: 'personalNote', type: 'string', nullable: true),
             ]
         )
     )]

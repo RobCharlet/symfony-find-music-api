@@ -49,4 +49,8 @@ phpstan.neon
 /secrets/*
 !/secrets/.gitkeep
 ###< docker secrets ###
+
+###> clients ###
 /skills-lock.json
+/.gemini/
+###< clients ###
