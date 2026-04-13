@@ -40,6 +40,8 @@ class AlbumTest extends TestCase
         $this->assertSame('https://example.com/cover.jpg', $album->getCoverUrl());
         $this->assertInstanceOf(\DateTimeImmutable::class, $album->getCreatedAt());
         $this->assertInstanceOf(\DateTimeImmutable::class, $album->getUpdatedAt());
+        $this->assertNull($album->getRating());
+        $this->assertNull($album->getPersonalNote());
     }
 
     #[Test]
@@ -89,6 +91,8 @@ class AlbumTest extends TestCase
             'Trip Hop',
             'Ninja Tune',
             'https://example.com/cover.jpg',
+            4,
+            'Un chef-d\'œuvre du trip-hop',
         );
 
         $this->assertSame('Animal Magic', $album->getTitle());
@@ -102,5 +106,7 @@ class AlbumTest extends TestCase
         $this->assertGreaterThanOrEqual($oldUpdatedAt, $album->getUpdatedAt());
         $this->assertSame('019c2e97-4f81-75c5-8eca-ec2ff86f7d56', $album->getUuid()->toString());
         $this->assertSame('019c2e97-8e0e-776c-bf55-76a2765e369d', $album->getOwnerUuid()->toString());
+        $this->assertSame(4, $album->getRating());
+        $this->assertSame('Un chef-d\'œuvre du trip-hop', $album->getPersonalNote());
     }
 }

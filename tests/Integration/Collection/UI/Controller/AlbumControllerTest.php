@@ -160,6 +160,76 @@ class AlbumControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function updateAlbumWithRatingAndPersonalNote()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $uuid = $this->createAlbumOwnedBy($user);
+
+        $client->request('PUT', '/api/albums/'.$uuid, content: json_encode([
+            'title' => 'Black Sands',
+            'artist' => 'Bonobo',
+            'releaseYear' => 2010,
+            'format' => 'Vinyle',
+            'isFavorite' => true,
+            'rating' => 5,
+            'personalNote' => 'Chef-d\'œuvre ambient',
+        ]));
+
+        $this->assertResponseStatusCodeSame(204);
+
+        $client->request('GET', '/api/albums/'.$uuid);
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(5, $data['rating']);
+        $this->assertSame('Chef-d\'œuvre ambient', $data['personalNote']);
+    }
+
+    #[Test]
+    public function updateAlbumWithRatingOutOfRangeReturnsValidationError()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $uuid = $this->createAlbumOwnedBy($user);
+
+        $client->request('PUT', '/api/albums/'.$uuid, content: json_encode([
+            'title' => 'Black Sands',
+            'artist' => 'Bonobo',
+            'releaseYear' => 2010,
+            'format' => 'Vinyle',
+            'rating' => 6,
+        ]));
+
+        $this->assertResponseStatusCodeSame(422);
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('violations', $data);
+        $fields = array_column($data['violations'], 'field');
+        $this->assertContains('rating', $fields);
+    }
+
+    #[Test]
+    public function updateAlbumWithPersonalNoteTooLongReturnsValidationError()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $uuid = $this->createAlbumOwnedBy($user);
+
+        $client->request('PUT', '/api/albums/'.$uuid, content: json_encode([
+            'title' => 'Black Sands',
+            'artist' => 'Bonobo',
+            'releaseYear' => 2010,
+            'format' => 'Vinyle',
+            'personalNote' => str_repeat('a', 2001),
+        ]));
+
+        $this->assertResponseStatusCodeSame(422);
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('violations', $data);
+        $fields = array_column($data['violations'], 'field');
+        $this->assertContains('personalNote', $fields);
+    }
+
+    #[Test]
     public function deleteAlbum()
     {
         [$client, $user] = $this->createAuthenticatedClientWithUser();

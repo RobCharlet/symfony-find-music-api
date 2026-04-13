@@ -37,6 +37,8 @@ final readonly class UpdateAlbumCommandHandler
             $command->genre,
             $command->label,
             $command->coverUrl,
+            $command->rating,
+            $command->personalNote,
         );
 
         $this->albumWriter->save($album);

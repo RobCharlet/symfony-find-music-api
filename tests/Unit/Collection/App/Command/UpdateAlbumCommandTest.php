@@ -24,6 +24,8 @@ class UpdateAlbumCommandTest extends TestCase
             'genre' => 'Trip Hop',
             'label' => 'Ninja Tune',
             'coverUrl' => 'https://google.com/cover.jpg',
+            'rating' => 5,
+            'personalNote' => 'Album incontournable',
         ];
 
         $command = UpdateAlbumCommand::withData($uuid, $ownerUuid, false, $payload);
@@ -37,6 +39,8 @@ class UpdateAlbumCommandTest extends TestCase
         $this->assertSame('Trip Hop', $command->genre);
         $this->assertSame('Ninja Tune', $command->label);
         $this->assertSame('https://google.com/cover.jpg', $command->coverUrl);
+        $this->assertSame(5, $command->rating);
+        $this->assertSame('Album incontournable', $command->personalNote);
     }
 
     #[Test]
@@ -58,5 +62,7 @@ class UpdateAlbumCommandTest extends TestCase
         $this->assertNull($command->genre);
         $this->assertNull($command->label);
         $this->assertNull($command->coverUrl);
+        $this->assertNull($command->rating);
+        $this->assertNull($command->personalNote);
     }
 }

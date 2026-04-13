@@ -31,3 +31,12 @@ App\Collection\App\Command\UpdateAlbumCommand:
         coverUrl:
             - Url:
                 requireTld: true
+        rating:
+            - Type:
+                type: integer
+            - Range:
+                min: 0
+                max: 5
+        personalNote:
+            - Length:
+                max: 2000
