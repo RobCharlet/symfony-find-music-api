@@ -16,3 +16,4 @@ CLAUDE.md
 config/jwt/*.pem
 config/jwt/test/*.pem
 secrets/
+config/secrets/*/*.decrypt.private.php
