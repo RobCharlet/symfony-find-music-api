@@ -58,6 +58,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup
         uses: ./.github/workflows/setup
+      - name: Decrypt Symfony test vault
+        env:
+          SYMFONY_DECRYPTION_SECRET: ${{ secrets.SYMFONY_DECRYPTION_SECRET_TEST }}
+        run: APP_RUNTIME_ENV=test php bin/console secrets:decrypt-to-local --force --env=test
       - name: Prepare test environment
         run: |
           mkdir -p config/jwt/test
