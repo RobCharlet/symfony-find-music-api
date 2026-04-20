@@ -8,6 +8,11 @@ framework:
     #esi: true
     #fragments: true
 
+    http_client:
+        scoped_clients:
+            discogs_api.client:
+                base_uri: 'https://api.discogs.com'
+
 when@test:
     framework:
         test: true

@@ -15,6 +15,8 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
         private string $email,
         private string $password,
         private array $roles = [],
+        private ?string $discogsAccessToken = null,
+        private ?string $discogsAccessTokenNonce = null,
     ) {
     }
 
@@ -63,5 +65,28 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
     public function getUuid(): Uuid
     {
         return $this->uuid;
+    }
+
+    public function clearDiscogsAccessToken(): void
+    {
+        $this->discogsAccessToken = null;
+        $this->discogsAccessTokenNonce = null;
+    }
+
+    public function getDiscogsAccessToken(): ?string
+    {
+        return $this->discogsAccessToken;
+    }
+
+    public function getDiscogsAccessTokenNonce(): ?string
+    {
+        return $this->discogsAccessTokenNonce;
+    }
+
+    public function setDiscogsAccessToken(?string $discogsAccessToken, ?string $discogsAccessTokenNonce): void
+    {
+        $this->discogsAccessToken = $discogsAccessToken;
+        $this->discogsAccessTokenNonce = $discogsAccessTokenNonce;
+
     }
 }

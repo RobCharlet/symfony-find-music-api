@@ -4,6 +4,7 @@ namespace App\Collection\UI\Controller;
 
 use App\Collection\App\Command\AddAlbumCommand;
 use App\Collection\App\Command\DeleteAlbumCommand;
+use App\Collection\App\Command\EnrichAlbumFromDiscogsCommand;
 use App\Collection\App\Command\UpdateAlbumCommand;
 use App\Collection\App\Query\FindAlbumQuery;
 use App\Collection\UI\RestNormalizer\AlbumNormalizer;
@@ -187,5 +188,23 @@ class AlbumController extends AbstractController
             '',
             Response::HTTP_NO_CONTENT,
         );
+    }
+
+    #[Route('/{uuid}/enrich', name: 'album_enrich', requirements: ['_format' => 'json'], methods: ['POST'])]
+    #[Security(name: 'Bearer')]
+    public function enrich(
+        MessageBusInterface $commandBus,
+        Uuid $uuid,
+    ): JsonResponse {
+        $userAuthorization = $this->getUserAuthorization();
+
+        $command = EnrichAlbumFromDiscogsCommand::withAlbumUuid($uuid, $userAuthorization->userUuid);
+        $commandBus->dispatch($command);
+
+        return new JsonResponse(
+            '',
+            Response::HTTP_NO_CONTENT
+        );
+
     }
 }

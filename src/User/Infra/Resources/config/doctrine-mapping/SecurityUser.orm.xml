@@ -10,6 +10,8 @@
         <field name="password" column="password" type="string" nullable="false"/>
         <field name="roles" column="roles" type="json" nullable="false"/>
         <field name="email" column="email" type="string" nullable="false" length="180"/>
+        <field name="discogsAccessToken" column="discogs_access_token" type="binary" nullable="true" length="256"/>
+        <field name="discogsAccessTokenNonce" column="discogs_refresh_token_nonce" type="binary" nullable="true" length="256"/>
         <unique-constraints>
             <unique-constraint columns="email" name="uq_email"/>
         </unique-constraints>
