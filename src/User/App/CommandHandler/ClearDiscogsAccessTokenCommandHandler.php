@@ -3,14 +3,14 @@
 namespace App\User\App\CommandHandler;
 
 use App\User\App\Command\ClearDiscogsAccessTokenCommand;
-use App\User\Infra\Repository\DoctrineORM\DiscogsCredentialsWriter;
+use App\User\Domain\Repository\DiscogsCredentialsWriterInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 final readonly class ClearDiscogsAccessTokenCommandHandler
 {
     public function __construct(
-        private DiscogsCredentialsWriter $discogsCredentialsWriter,
+        private DiscogsCredentialsWriterInterface $discogsCredentialsWriter,
     ) {
     }
 

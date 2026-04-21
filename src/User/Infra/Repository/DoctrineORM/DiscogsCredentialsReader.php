@@ -3,6 +3,7 @@
 namespace App\User\Infra\Repository\DoctrineORM;
 
 use App\User\Domain\Exception\MissingDiscogsCredentialsException;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\DiscogsCredentialsReaderInterface;
 use App\User\Domain\ValueObject\DiscogsAccessToken;
 use App\User\Infra\Security\SecurityUser;
@@ -21,6 +22,10 @@ final readonly class DiscogsCredentialsReader implements DiscogsCredentialsReade
     public function getDecryptedToken(Uuid $uuid): DiscogsAccessToken
     {
         $user = $this->em->getRepository(SecurityUser::class)->findOneBy(['uuid' => $uuid]);
+
+        if (null === $user) {
+            throw new UserNotFoundException();
+        }
 
         $token = $user->getDiscogsAccessToken();
 

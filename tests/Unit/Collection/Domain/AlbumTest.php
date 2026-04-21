@@ -109,4 +109,63 @@ class AlbumTest extends TestCase
         $this->assertSame(4, $album->getRating());
         $this->assertSame('Un chef-d\'œuvre du trip-hop', $album->getPersonalNote());
     }
+
+    #[Test]
+    public function enrichReplacesDiscogsFields(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+
+        $album = new Album(
+            $uuid,
+            $ownerUuid,
+            'Animal Magic',
+            'Bonobo',
+            'Vinyle',
+            false,
+            null,
+            null,
+            null,
+            null,
+        );
+
+        $album->enrich(
+            'https://img.discogs.com/animal-magic.jpg',
+            'Electronic',
+            'Tru Thoughts',
+            1999,
+        );
+
+        $this->assertSame('https://img.discogs.com/animal-magic.jpg', $album->getCoverUrl());
+        $this->assertSame('Electronic', $album->getGenre());
+        $this->assertSame('Tru Thoughts', $album->getLabel());
+        $this->assertSame(1999, $album->getReleaseYear());
+    }
+
+    #[Test]
+    public function enrichAcceptsNullFieldsWhenDiscogsHasNoData(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $ownerUuid = UuidV7::fromString('019c2e97-8e0e-776c-bf55-76a2765e369d');
+
+        $album = new Album(
+            $uuid,
+            $ownerUuid,
+            'Animal Magic',
+            'Bonobo',
+            'Vinyle',
+            false,
+            1999,
+            'Electronic',
+            'Tru Thoughts',
+            'https://old.com/cover.jpg',
+        );
+
+        $album->enrich(null, null, null, null);
+
+        $this->assertNull($album->getCoverUrl());
+        $this->assertNull($album->getGenre());
+        $this->assertNull($album->getLabel());
+        $this->assertNull($album->getReleaseYear());
+    }
 }

@@ -8,13 +8,16 @@ final readonly class CreateDiscogsAccessTokenCommand
 {
     public function __construct(
         public Uuid $userUuid,
+        #[\SensitiveParameter]
         public string $discogsAccessToken,
-        public bool $isAdmin,
     ) {
     }
 
-    public static function withAccessToken(Uuid $userUuid, string $discogsAccessToken, bool $isAdmin): self
-    {
-        return new self($userUuid, $discogsAccessToken, $isAdmin);
+    public static function withAccessToken(
+        Uuid $userUuid,
+        #[\SensitiveParameter]
+        string $discogsAccessToken,
+    ): self {
+        return new self($userUuid, $discogsAccessToken);
     }
 }

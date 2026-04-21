@@ -2,6 +2,7 @@
 
 namespace App\User\Infra\Repository\DoctrineORM;
 
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\DiscogsCredentialsWriterInterface;
 use App\User\Domain\ValueObject\DiscogsAccessToken;
 use App\User\Infra\Security\SecurityUser;
@@ -20,6 +21,11 @@ final readonly class DiscogsCredentialsWriter implements DiscogsCredentialsWrite
     public function save(Uuid $userUuid, DiscogsAccessToken $discogsAccessToken): void
     {
         $user = $this->em->getRepository(SecurityUser::class)->findOneBy(['uuid' => $userUuid]);
+
+        if (null === $user) {
+            throw new UserNotFoundException();
+        }
+
         [$encryptedToken, $nonce] = $this->cipher->encrypt($discogsAccessToken);
         $user->setDiscogsAccessToken($encryptedToken, $nonce);
         $this->em->flush();
@@ -28,6 +34,11 @@ final readonly class DiscogsCredentialsWriter implements DiscogsCredentialsWrite
     public function clear(Uuid $userUuid): void
     {
         $user = $this->em->getRepository(SecurityUser::class)->findOneBy(['uuid' => $userUuid]);
+
+        if (null === $user) {
+            throw new UserNotFoundException();
+        }
+
         $user->clearDiscogsAccessToken();
         $this->em->flush();
     }

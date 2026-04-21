@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Collection\UI\EventListener;
 
 use App\Collection\Domain\Exception\AlbumNotFoundException;
+use App\Collection\Domain\Exception\DiscogsIdException;
 use App\Collection\Domain\Exception\ExternalReferenceNotFoundException;
 use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\UI\EventListener\ExceptionListener;
@@ -92,6 +93,24 @@ class ExceptionListenerTest extends TestCase
         $data = json_decode($response->getContent(), true);
         $this->assertSame('forbidden', $data['type']);
         $this->assertSame(403, $data['status']);
+    }
+
+    #[Test]
+    public function discogsIdExceptionReturns422WithCoherentBody(): void
+    {
+        $event = $this->makeHandlerFailedEvent(new DiscogsIdException());
+
+        $this->listener->onExceptionEvent($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertSame('application/problem+json', $response->headers->get('Content-Type'));
+
+        $data = json_decode($response->getContent(), true);
+        $this->assertSame('unprocessable_entity', $data['type']);
+        $this->assertSame(422, $data['status']);
+        $this->assertSame('No Discogs reference found for this album.', $data['detail']);
     }
 
     #[Test]

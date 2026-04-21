@@ -148,7 +148,6 @@ readonly class GlobalExceptionListener
             'exception' => $exception,
         ]);
 
-        // Fallback: return JSON 500 for any unhandled exception
         $event->setResponse(new JsonResponse(
             [
                 'type' => 'server_error',

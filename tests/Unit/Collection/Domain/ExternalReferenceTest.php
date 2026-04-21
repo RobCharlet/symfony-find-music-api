@@ -43,7 +43,7 @@ class ExternalReferenceTest extends TestCase
 
         $this->assertSame('019c2e97-b1a2-7d3e-9f44-1a2b3c4d5e6f', $externalReference->getUuid()->toString());
         $this->assertSame($album, $externalReference->getAlbum());
-        $this->assertSame('spotify', $externalReference->getPlatform());
+        $this->assertSame(PlatformEnum::Spotify, $externalReference->getPlatform());
         $this->assertSame('spotify-123', $externalReference->getExternalId());
         $this->assertSame($metadata, $externalReference->getMetadata());
     }
@@ -84,7 +84,7 @@ class ExternalReferenceTest extends TestCase
             $newMetadata,
         );
 
-        $this->assertSame('discogs', $externalReference->getPlatform());
+        $this->assertSame(PlatformEnum::Discogs, $externalReference->getPlatform());
         $this->assertSame('discogs-456', $externalReference->getExternalId());
         $this->assertSame($newMetadata, $externalReference->getMetadata());
         $this->assertSame('019c2e97-b1a2-7d3e-9f44-1a2b3c4d5e6f', $externalReference->getUuid()->toString());

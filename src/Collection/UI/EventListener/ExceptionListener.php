@@ -3,6 +3,7 @@
 namespace App\Collection\UI\EventListener;
 
 use App\Collection\Domain\Exception\AlbumNotFoundException;
+use App\Collection\Domain\Exception\DiscogsIdException;
 use App\Collection\Domain\Exception\ExternalReferenceNotFoundException;
 use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\UI\Exception\InvalidExportFormatException;
@@ -60,6 +61,16 @@ final class ExceptionListener
                         'detail' => 'Forbidden.',
                     ],
                     Response::HTTP_FORBIDDEN,
+                    ['Content-Type' => 'application/problem+json']
+                ),
+                $nested instanceof DiscogsIdException => new JsonResponse(
+                    [
+                        'type' => 'unprocessable_entity',
+                        'title' => 'Unprocessable Entity',
+                        'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                        'detail' => 'No Discogs reference found for this album.',
+                    ],
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
                     ['Content-Type' => 'application/problem+json']
                 ),
                 default => null,

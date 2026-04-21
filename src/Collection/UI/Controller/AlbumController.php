@@ -191,6 +191,17 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/{uuid}/enrich', name: 'album_enrich', requirements: ['_format' => 'json'], methods: ['POST'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'Album UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
     #[Security(name: 'Bearer')]
     public function enrich(
         MessageBusInterface $commandBus,

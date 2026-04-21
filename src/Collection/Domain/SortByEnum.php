@@ -10,4 +10,9 @@ enum SortByEnum: string
     case ReleaseYear = 'releaseYear';
     case Format = 'format';
     case Label = 'label';
+
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
 }

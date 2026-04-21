@@ -4,6 +4,7 @@ namespace App\Collection\App\CommandHandler;
 
 use App\Collection\App\Command\EnrichAlbumFromDiscogsCommand;
 use App\Collection\Domain\Exception\DiscogsIdException;
+use App\Collection\Domain\PlatformEnum;
 use App\Collection\Domain\Exception\ExternalReferenceNotFoundException;
 use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\Domain\Repository\AlbumReaderInterface;
@@ -42,7 +43,7 @@ final readonly class EnrichAlbumFromDiscogsCommandHandler
         $releaseId = null;
 
         foreach ($externalReferences as $externalReference) {
-            if ('discogs' === $externalReference->getPlatform()) {
+            if (PlatformEnum::Discogs === $externalReference->getPlatform()) {
                 $releaseId = $externalReference->getExternalId();
             }
         }
@@ -59,7 +60,7 @@ final readonly class EnrichAlbumFromDiscogsCommandHandler
             $infos['images'][0]['uri'] ?? null,
             $infos['genres'][0] ?? null,
             $infos['labels'][0]['name'] ?? null,
-            $infos['released_formatted'] ?? null,
+            $infos['year'] ?? null,
         );
 
         $this->albumWriter->save($album);

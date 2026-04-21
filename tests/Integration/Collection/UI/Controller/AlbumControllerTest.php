@@ -3,6 +3,8 @@
 namespace App\Tests\Integration\Collection\UI\Controller;
 
 use App\Collection\Domain\Album;
+use App\Collection\Domain\PlatformEnum;
+use App\Factory\ExternalReferenceFactory;
 use App\Factory\SecurityUserFactory;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use PHPUnit\Framework\Attributes\Test;
@@ -227,6 +229,65 @@ class AlbumControllerTest extends ControllerTestCase
         $this->assertArrayHasKey('violations', $data);
         $fields = array_column($data['violations'], 'field');
         $this->assertContains('personalNote', $fields);
+    }
+
+    #[Test]
+    public function enrichAlbumReturnsNoContent()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'enrich-success-owner@test.com');
+        $result = $this->createAlbumOwnedByAndReturnAlbum($user);
+        $uuid = $result['uuid'];
+
+        ExternalReferenceFactory::createOne([
+            'album' => $result['album'],
+            'platform' => PlatformEnum::Discogs,
+            'externalId' => '12345',
+            'metadata' => null,
+        ]);
+
+        $client->request(
+            'PUT',
+            '/api/users/me/discogs-access-token',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'accessToken' => 'xYzDiscogsPersonalAccessToken',
+            ])
+        );
+        $this->assertResponseStatusCodeSame(204);
+
+        $client->request('POST', '/api/albums/'.$uuid.'/enrich');
+        $this->assertResponseStatusCodeSame(204);
+    }
+
+    #[Test]
+    public function enrichAlbumWithoutDiscogsExternalReferenceReturnsNotFound()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser(email: 'enrich-owner@test.com');
+        $uuid = $this->createAlbumOwnedBy($user);
+
+        $client->request('POST', '/api/albums/'.$uuid.'/enrich');
+
+        $this->assertResponseStatusCodeSame(404);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('not_found', $data['type']);
+    }
+
+    #[Test]
+    public function nonOwnerCannotEnrichAnotherUsersAlbum()
+    {
+        [$_ownerClient, $owner] = $this->createAuthenticatedClientWithUser(email: 'enrich-owner-2@test.com');
+        $uuid = $this->createAlbumOwnedBy($owner);
+
+        [$intruderClient] = $this->createAuthenticatedClientWithUser(email: 'enrich-intruder@test.com');
+        $intruderClient->request('POST', '/api/albums/'.$uuid.'/enrich');
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        $data = json_decode($intruderClient->getResponse()->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
     }
 
     #[Test]

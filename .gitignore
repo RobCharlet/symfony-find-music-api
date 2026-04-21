@@ -56,4 +56,5 @@ phpstan.neon
 ###> clients ###
 /skills-lock.json
 /.gemini/
+/.ai/
 ###< clients ###

@@ -60,7 +60,7 @@ class AddExternalReferenceCommandHandlerTest extends TestCase
             ->willReturnCallback(function (ExternalReference $externalReference) use ($uuid, $album) {
                 $this->assertSame($uuid, $externalReference->getUuid());
                 $this->assertSame($album, $externalReference->getAlbum());
-                $this->assertSame(PlatformEnum::Spotify->value, $externalReference->getPlatform());
+                $this->assertSame(PlatformEnum::Spotify, $externalReference->getPlatform());
                 $this->assertSame('abc123', $externalReference->getExternalId());
                 $this->assertSame(['url' => 'https://open.spotify.com/album/abc123'], $externalReference->getMetadata());
             });
