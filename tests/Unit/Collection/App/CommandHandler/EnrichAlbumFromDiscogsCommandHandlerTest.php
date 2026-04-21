@@ -13,8 +13,8 @@ use App\Collection\Domain\PlatformEnum;
 use App\Collection\Domain\Repository\AlbumReaderInterface;
 use App\Collection\Domain\Repository\AlbumWriterInterface;
 use App\Collection\Domain\Repository\DiscogsApiClientInterface;
+use App\Collection\Domain\Repository\DiscogsTokenProviderInterface;
 use App\Collection\Domain\Repository\ExternalReferenceReaderInterface;
-use App\User\Domain\Repository\DiscogsCredentialsReaderInterface;
 use App\User\Domain\ValueObject\DiscogsAccessToken;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -61,9 +61,9 @@ class EnrichAlbumFromDiscogsCommandHandlerTest extends TestCase
             ->with($albumUuid)
             ->willReturn([$externalReference]);
 
-        $credentialsReader = $this->createMock(DiscogsCredentialsReaderInterface::class);
+        $credentialsReader = $this->createMock(DiscogsTokenProviderInterface::class);
         $credentialsReader->expects($this->once())
-            ->method('getDecryptedToken')
+            ->method('getToken')
             ->with($ownerUuid)
             ->willReturn($token);
 
@@ -121,7 +121,7 @@ class EnrichAlbumFromDiscogsCommandHandlerTest extends TestCase
             $albumReader,
             $albumWriter,
             $apiClient,
-            $this->createStub(DiscogsCredentialsReaderInterface::class),
+            $this->createStub(DiscogsTokenProviderInterface::class),
             $this->createStub(ExternalReferenceReaderInterface::class),
         );
 
@@ -151,7 +151,7 @@ class EnrichAlbumFromDiscogsCommandHandlerTest extends TestCase
             $albumReader,
             $albumWriter,
             $this->createStub(DiscogsApiClientInterface::class),
-            $this->createStub(DiscogsCredentialsReaderInterface::class),
+            $this->createStub(DiscogsTokenProviderInterface::class),
             $externalReferenceReader,
         );
 
@@ -191,7 +191,7 @@ class EnrichAlbumFromDiscogsCommandHandlerTest extends TestCase
             $albumReader,
             $albumWriter,
             $apiClient,
-            $this->createStub(DiscogsCredentialsReaderInterface::class),
+            $this->createStub(DiscogsTokenProviderInterface::class),
             $externalReferenceReader,
         );
 

@@ -10,8 +10,8 @@ use App\Collection\Domain\Exception\OwnershipForbiddenException;
 use App\Collection\Domain\Repository\AlbumReaderInterface;
 use App\Collection\Domain\Repository\AlbumWriterInterface;
 use App\Collection\Domain\Repository\DiscogsApiClientInterface;
+use App\Collection\Domain\Repository\DiscogsTokenProviderInterface;
 use App\Collection\Domain\Repository\ExternalReferenceReaderInterface;
-use App\User\Domain\Repository\DiscogsCredentialsReaderInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -21,7 +21,7 @@ final readonly class EnrichAlbumFromDiscogsCommandHandler
         private AlbumReaderInterface $albumReader,
         private AlbumWriterInterface $albumWriter,
         private DiscogsApiClientInterface $discogsApiClient,
-        private DiscogsCredentialsReaderInterface $discogsCredentialsReader,
+        private DiscogsTokenProviderInterface $discogsTokenProvider,
         private ExternalReferenceReaderInterface $externalReferenceReader,
     ) {
     }
@@ -52,7 +52,7 @@ final readonly class EnrichAlbumFromDiscogsCommandHandler
             throw new DiscogsIdException();
         }
 
-        $discogsAccessToken = $this->discogsCredentialsReader->getDecryptedToken($command->userUuid);
+        $discogsAccessToken = $this->discogsTokenProvider->getToken($command->userUuid);
 
         $infos = $this->discogsApiClient->fetchRelease($releaseId, $discogsAccessToken);
 
