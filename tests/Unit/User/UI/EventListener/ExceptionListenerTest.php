@@ -3,6 +3,9 @@
 namespace App\Tests\Unit\User\UI\EventListener;
 
 use App\User\Domain\Exception\InvalidCurrentPasswordException;
+use App\User\Domain\Exception\InvalidDiscogsAccessTokenException;
+use App\User\Domain\Exception\MissingDiscogsCredentialsException;
+use App\User\Domain\Exception\SodiumException;
 use App\User\Domain\Exception\UserAccessForbiddenException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\UI\EventListener\ExceptionListener;
@@ -85,6 +88,55 @@ class ExceptionListenerTest extends TestCase
 
         $data = json_decode($response->getContent(), true);
         $this->assertSame('conflict', $data['type']);
+    }
+
+    #[Test]
+    public function missingDiscogsCredentialsReturnsJson403(): void
+    {
+        $event = $this->makeHandlerFailedEvent(new MissingDiscogsCredentialsException());
+
+        $this->listener->onExceptionEvent($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame('application/problem+json', $response->headers->get('Content-Type'));
+
+        $data = json_decode($response->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
+        $this->assertSame('Missing Discogs credentials.', $data['detail']);
+    }
+
+    #[Test]
+    public function sodiumExceptionReturnsJson403(): void
+    {
+        $event = $this->makeHandlerFailedEvent(new SodiumException());
+
+        $this->listener->onExceptionEvent($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(403, $response->getStatusCode());
+
+        $data = json_decode($response->getContent(), true);
+        $this->assertSame('forbidden', $data['type']);
+        $this->assertSame('Discogs credentials could not be processed.', $data['detail']);
+    }
+
+    #[Test]
+    public function invalidDiscogsAccessTokenReturnsJson400WithMessage(): void
+    {
+        $event = $this->makeHandlerFailedEvent(new InvalidDiscogsAccessTokenException('Discogs access token cannot be empty'));
+
+        $this->listener->onExceptionEvent($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(400, $response->getStatusCode());
+
+        $data = json_decode($response->getContent(), true);
+        $this->assertSame('invalid_discogs_token', $data['type']);
+        $this->assertSame('Discogs access token cannot be empty', $data['detail']);
     }
 
     #[Test]

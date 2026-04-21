@@ -9,11 +9,11 @@ App\Collection\App\Query\FindAlbumsByOwnerWithPaginationQuery:
           - NotNull: ~
         sortBy:
             - Choice:
-                choices: [ title, artist, genre, releaseYear, format, label ]
+                callback: [ App\Collection\Domain\SortByEnum, values ]
                 message: Choose a valid sort field.
         sortOrder:
             - Choice:
-                choices: [ ASC, DESC ]
+                callback: [ App\Collection\Domain\SortDirectionEnum, values ]
                 message: Choose a valid sort order.
         isFavorite:
             - Type:

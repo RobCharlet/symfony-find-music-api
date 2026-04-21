@@ -4,6 +4,7 @@ namespace App\Collection\UI\Controller;
 
 use App\Collection\App\Command\AddAlbumCommand;
 use App\Collection\App\Command\DeleteAlbumCommand;
+use App\Collection\App\Command\EnrichAlbumFromDiscogsCommand;
 use App\Collection\App\Command\UpdateAlbumCommand;
 use App\Collection\App\Query\FindAlbumQuery;
 use App\Collection\UI\RestNormalizer\AlbumNormalizer;
@@ -187,5 +188,34 @@ class AlbumController extends AbstractController
             '',
             Response::HTTP_NO_CONTENT,
         );
+    }
+
+    #[Route('/{uuid}/enrich', name: 'album_enrich', requirements: ['_format' => 'json'], methods: ['POST'])]
+    #[OA\Parameter(
+        name: 'uuid',
+        description: 'Album UUID',
+        in: 'path',
+        required: true,
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Response(ref: '#/components/responses/NoContent', response: 204)]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
+    #[OA\Response(ref: '#/components/responses/NotFound', response: 404)]
+    #[Security(name: 'Bearer')]
+    public function enrich(
+        MessageBusInterface $commandBus,
+        Uuid $uuid,
+    ): JsonResponse {
+        $userAuthorization = $this->getUserAuthorization();
+
+        $command = EnrichAlbumFromDiscogsCommand::withAlbumUuid($uuid, $userAuthorization->userUuid);
+        $commandBus->dispatch($command);
+
+        return new JsonResponse(
+            '',
+            Response::HTTP_NO_CONTENT
+        );
+
     }
 }

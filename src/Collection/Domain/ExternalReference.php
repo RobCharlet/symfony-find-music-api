@@ -25,9 +25,9 @@ class ExternalReference
         return $this->album;
     }
 
-    public function getPlatform(): string
+    public function getPlatform(): PlatformEnum
     {
-        return $this->platform->value;
+        return $this->platform;
     }
 
     public function getExternalId(): string

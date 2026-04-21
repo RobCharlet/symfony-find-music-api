@@ -115,6 +115,18 @@ final class Album
         $this->personalNote = $personalNote;
     }
 
+    public function enrich(
+        ?string $coverUrl,
+        ?string $genre,
+        ?string $label,
+        ?int $releaseYear,
+    ): void {
+        $this->coverUrl = $coverUrl;
+        $this->genre = $genre;
+        $this->label = $label;
+        $this->releaseYear = $releaseYear;
+    }
+
     public function getRating(): ?int
     {
         return $this->rating;

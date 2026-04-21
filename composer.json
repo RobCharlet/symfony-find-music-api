@@ -25,6 +25,7 @@
         "symfony/dotenv": "8.0.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "8.0.*",
+        "symfony/http-client": "8.0.*",
         "symfony/messenger": "8.0.*",
         "symfony/mime": "8.0.*",
         "symfony/monolog-bundle": "^4.0",
@@ -39,7 +40,8 @@
         "symfony/validator": "8.0.*",
         "symfony/yaml": "8.0.*",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0"
+        "twig/twig": "^2.12|^3.0",
+        "ext-sodium": "*"
     },
     "config": {
         "allow-plugins": {

@@ -175,6 +175,7 @@ nelmio_api_doc:
             -   name: Users
             -   name: Albums
             -   name: External References
+            -   name: Discogs
         paths:
             /api/login_check:
                 post:

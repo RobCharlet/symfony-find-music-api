@@ -64,7 +64,7 @@ class UpdateExternalReferenceCommandHandlerTest extends TestCase
             ->expects($this->once())
             ->method('save')
             ->willReturnCallback(function (ExternalReference $externalReference) {
-                $this->assertSame(PlatformEnum::Discogs->value, $externalReference->getPlatform());
+                $this->assertSame(PlatformEnum::Discogs, $externalReference->getPlatform());
                 $this->assertSame('new-id', $externalReference->getExternalId());
                 $this->assertSame(['releaseId' => 12345], $externalReference->getMetadata());
             });

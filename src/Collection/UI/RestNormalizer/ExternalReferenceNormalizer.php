@@ -16,7 +16,7 @@ class ExternalReferenceNormalizer implements NormalizerInterface
         return [
             'uuid'       => $data->getUuid()->toString(),
             'albumUuid'  => $data->getAlbum()->getUuid()->toString(),
-            'platform'   => $data->getPlatform(),
+            'platform'   => $data->getPlatform()->value,
             'externalId' => $data->getExternalId(),
             'metadata'   => $data->getMetadata(),
         ];
