@@ -11,6 +11,7 @@ final class User
         private string $email,
         private string $password,
         private array $roles = [],
+        private bool $isPublic = false,
     ) {
     }
 
@@ -43,6 +44,11 @@ final class User
         return $this->password;
     }
 
+    public function isPublic(): bool
+    {
+        return $this->isPublic;
+    }
+
     public function setPassword(string $password): void
     {
         $this->password = $password;
@@ -51,10 +57,12 @@ final class User
     public function update(
         string $email,
         array $roles,
+        bool $isPublic,
         ?string $password = null,
     ): void {
         $this->email = $email;
         $this->roles = $roles;
+        $this->isPublic = $isPublic;
         if (null !== $password) {
             $this->password = $password;
         }

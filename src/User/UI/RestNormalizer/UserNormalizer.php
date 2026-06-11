@@ -15,6 +15,7 @@ class UserNormalizer implements NormalizerInterface
         return [
             'uuid' => $data->getUuid(),
             'email' => $data->getEmail(),
+            'isPublic' => $data->isPublic(),
         ];
     }
 

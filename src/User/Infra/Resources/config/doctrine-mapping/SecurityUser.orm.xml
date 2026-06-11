@@ -12,6 +12,7 @@
         <field name="email" column="email" type="string" nullable="false" length="180"/>
         <field name="discogsAccessToken" column="discogs_access_token" type="binary" nullable="true"/>
         <field name="discogsAccessTokenNonce" column="discogs_access_token_nonce" type="binary" nullable="true"/>
+        <field name="isPublic" column="is_public" type="boolean" nullable="false"/>
         <unique-constraints>
             <unique-constraint columns="email" name="uq_email"/>
         </unique-constraints>

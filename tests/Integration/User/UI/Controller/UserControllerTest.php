@@ -139,12 +139,12 @@ class UserControllerTest extends WebTestCase
             'roles'    => ['ROLE_USER'],
         ]);
 
-        $this->client->request('PUT', '/api/users/'.$uuid, content: json_encode([
+        $this->client->jsonRequest('PUT', '/api/users/'.$uuid, [
             'email'    => 'updated@example.com',
             'password' => 'new_password',
             'currentPassword' => 'hashed_password',
             'roles'    => ['ROLE_USER'],
-        ]));
+        ]);
 
         $this->assertResponseStatusCodeSame(204);
     }
@@ -181,11 +181,11 @@ class UserControllerTest extends WebTestCase
     #[Test]
     public function updateUserNotFound()
     {
-        $this->client->request('PUT', '/api/users/019c1ec8-961c-7802-90e4-b8163542a2cb', content: json_encode([
+        $this->client->jsonRequest('PUT', '/api/users/019c1ec8-961c-7802-90e4-b8163542a2cb', [
             'email'    => 'test@example.com',
             'password' => 'password',
             'roles'    => ['ROLE_USER'],
-        ]));
+        ]);
 
         $this->assertResponseStatusCodeSame(404);
         $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
@@ -209,11 +209,11 @@ class UserControllerTest extends WebTestCase
         $token      = $jwtManager->create($user);
         $client->setServerParameter('HTTP_AUTHORIZATION', sprintf('Bearer %s', $token));
 
-        $client->request('PUT', '/api/users/'.$uuid->toRfc4122(), content: json_encode([
+        $client->jsonRequest('PUT', '/api/users/'.$uuid->toRfc4122(), [
             'email'           => 'self-updated@example.com',
             'currentPassword' => 'current-secret',
             'roles'           => ['ROLE_USER'],
-        ]));
+        ]);
 
         $this->assertResponseStatusCodeSame(204);
     }
@@ -270,10 +270,10 @@ class UserControllerTest extends WebTestCase
         ]);
 
         $client = $this->createJWTAuthenticatedClient();
-        $client->request('PUT', '/api/users/'.$uuid, content: json_encode([
+        $client->jsonRequest('PUT', '/api/users/'.$uuid, [
             'email'           => 'hacked@example.com',
             'currentPassword' => 'whatever',
-        ]));
+        ]);
 
         $this->assertResponseStatusCodeSame(403);
         $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
@@ -292,13 +292,44 @@ class UserControllerTest extends WebTestCase
     #[Test]
     public function updateUserInvalidJsonReturns400()
     {
-        $this->client->request('PUT', '/api/users/019c1ec8-961c-7802-90e4-b8163542a2cd', content: '{bad');
+        $this->client->request(
+            'PUT',
+            '/api/users/019c1ec8-961c-7802-90e4-b8163542a2cd',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: '{bad'
+        );
 
         $this->assertResponseStatusCodeSame(400);
         $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
 
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame('invalid_json', $data['type']);
+    }
+
+    #[Test]
+    public function updateUserRejectsStringIsPublicPayload(): void
+    {
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+
+        $uuid = UuidV7::fromString('019c1ec8-961c-7802-90e4-b8163542a2cd');
+        $user = SecurityUserFactory::createOne([
+            'uuid'     => $uuid,
+            'email'    => 'public-string@example.com',
+            'password' => 'current-secret',
+            'roles'    => ['ROLE_USER'],
+        ]);
+
+        $jwtManager = $client->getContainer()->get(JWTTokenManagerInterface::class);
+        $token      = $jwtManager->create($user);
+        $client->setServerParameter('HTTP_AUTHORIZATION', sprintf('Bearer %s', $token));
+
+        $client->jsonRequest('PUT', '/api/users/'.$uuid->toRfc4122(), [
+            'isPublic' => 'false',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertResponseHeaderSame('Content-Type', 'application/problem+json');
     }
 
     #[Test]

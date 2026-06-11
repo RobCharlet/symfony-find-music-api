@@ -9,12 +9,12 @@ use App\User\App\Command\UpdateUserCommand;
 use App\User\App\Query\FindUserQuery;
 use App\User\Infra\Security\SecurityUser;
 use App\User\UI\DTO\AdminCreateUserPayload;
+use App\User\UI\DTO\UpdateUserPayload;
 use App\User\UI\RestNormalizer\UserNormalizer;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -121,6 +121,7 @@ class UserController extends AbstractController
                 new OA\Property(property: 'email', type: 'string', nullable: true),
                 new OA\Property(property: 'password', type: 'string', nullable: true),
                 new OA\Property(property: 'roles', type: 'array', items: new OA\Items(type: 'string'), nullable: true),
+                new OA\Property(property: 'isPublic', type: 'boolean', nullable: true),
             ]
         )
     )]
@@ -132,21 +133,20 @@ class UserController extends AbstractController
     #[OA\Response(ref: '#/components/responses/ValidationError', response: 422)]
     public function updateUser(
         MessageBusInterface $commandBus,
-        Request $request,
+        #[MapRequestPayload] UpdateUserPayload $payload,
         Uuid $uuid,
     ): JsonResponse {
-        $payload = $request->toArray();
-
         $userAuthorization = $this->getUserAuthorization();
 
         $command = UpdateUserCommand::withData(
             $uuid,
             $userAuthorization->userUuid,
-            $payload['email'] ?? null,
-            $payload['password'] ?? null,
-            $payload['currentPassword'] ?? null,
-            $payload['roles'] ?? null,
-            $userAuthorization->isAdmin
+            $payload->email,
+            $payload->password,
+            $payload->currentPassword,
+            $payload->roles,
+            $userAuthorization->isAdmin,
+            $payload->isPublic
         );
 
         $commandBus->dispatch($command);
