@@ -17,8 +17,17 @@ readonly class FollowWriter implements FollowWriterInterface
 
     public function save(DomainFollow $follow): void
     {
-        $this->entityManager->persist(Follow::fromDomain($follow));
-        $this->entityManager->flush();
+        // Idempotent insert: concurrent follows must not surface a PK conflict.
+        $this->entityManager->getConnection()->executeStatement(
+            'INSERT INTO app_follow (follower_uuid, followed_uuid, created_at)
+             VALUES (:follower_uuid, :followed_uuid, :created_at)
+             ON CONFLICT DO NOTHING',
+            [
+                'follower_uuid' => $follow->getFollowerUuid()->toRfc4122(),
+                'followed_uuid' => $follow->getFollowedUuid()->toRfc4122(),
+                'created_at' => $follow->getFollowedAt()->format('Y-m-d H:i:s'),
+            ]
+        );
     }
 
     public function delete(Uuid $followerUuid, Uuid $followedUuid): void

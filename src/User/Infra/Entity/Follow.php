@@ -2,7 +2,6 @@
 
 namespace App\User\Infra\Entity;
 
-use App\User\Domain\Follow as DomainFollow;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -21,15 +20,6 @@ class Follow
         #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
         private \DateTimeImmutable $createdAt,
     ) {
-    }
-
-    public static function fromDomain(DomainFollow $follow): self
-    {
-        return new self(
-            $follow->getFollowerUuid(),
-            $follow->getFollowedUuid(),
-            $follow->getFollowedAt(),
-        );
     }
 
     public function getFollowerUuid(): Uuid
