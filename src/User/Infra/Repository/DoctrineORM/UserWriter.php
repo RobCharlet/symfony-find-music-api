@@ -39,6 +39,27 @@ readonly class UserWriter implements UserWriterInterface
         $this->entityManager->flush();
     }
 
+    public function claimShareToken(Uuid $uuid, string $shareToken): string
+    {
+        $connection = $this->entityManager->getConnection();
+
+        $connection->executeStatement(
+            'UPDATE app_user SET share_token = :token WHERE uuid = :uuid AND share_token IS NULL',
+            ['token' => $shareToken, 'uuid' => $uuid->toRfc4122()],
+        );
+
+        $storedToken = $connection->fetchOne(
+            'SELECT share_token FROM app_user WHERE uuid = :uuid',
+            ['uuid' => $uuid->toRfc4122()],
+        );
+
+        if (!is_string($storedToken)) {
+            throw new UserNotFoundException();
+        }
+
+        return $storedToken;
+    }
+
     private function getSecurityUser(Uuid $uuid): SecurityUser
     {
         $securityUser = $this->entityManager->getRepository(SecurityUser::class)->findOneBy(['uuid' => $uuid]);

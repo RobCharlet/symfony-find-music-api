@@ -18,6 +18,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
         private ?string $discogsAccessToken = null,
         private ?string $discogsAccessTokenNonce = null,
         private bool $isPublic = false,
+        private ?string $shareToken = null,
     ) {
     }
 
@@ -29,6 +30,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
             $user->getPassword(),
             $user->getRoles(),
             isPublic: $user->isPublic(),
+            shareToken: $user->getShareToken(),
         );
     }
 
@@ -38,6 +40,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
         $this->password = $user->getPassword();
         $this->roles = $user->getRoles();
         $this->isPublic = $user->isPublic();
+        $this->shareToken = $user->getShareToken();
     }
 
     public function toDomain(): User
@@ -48,6 +51,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
             $this->password,
             $this->roles,
             $this->isPublic,
+            $this->shareToken,
         );
     }
 

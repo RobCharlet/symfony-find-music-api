@@ -30,6 +30,13 @@ readonly class UserReader implements UserReaderInterface
         return $securityUser->toDomain();
     }
 
+    public function findUserByShareToken(string $shareToken): User
+    {
+        $securityUser = $this->findSecurityUser(['shareToken' => $shareToken]);
+
+        return $securityUser->toDomain();
+    }
+
     private function findSecurityUser(array $criteria): SecurityUser
     {
         $securityUser = $this->entityManager->getRepository(SecurityUser::class)->findOneBy($criteria);

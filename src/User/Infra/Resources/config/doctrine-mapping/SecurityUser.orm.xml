@@ -13,8 +13,10 @@
         <field name="discogsAccessToken" column="discogs_access_token" type="binary" nullable="true"/>
         <field name="discogsAccessTokenNonce" column="discogs_access_token_nonce" type="binary" nullable="true"/>
         <field name="isPublic" column="is_public" type="boolean" nullable="false"/>
+        <field name="shareToken" column="share_token" type="string" length="64" nullable="true"/>
         <unique-constraints>
             <unique-constraint columns="email" name="uq_email"/>
+            <unique-constraint columns="share_token" name="uq_share_token"/>
         </unique-constraints>
     </entity>
 </doctrine-mapping>

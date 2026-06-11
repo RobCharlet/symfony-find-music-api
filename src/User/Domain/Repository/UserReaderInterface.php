@@ -10,4 +10,6 @@ interface UserReaderInterface
     public function findUserByUuid(Uuid $uuid): User;
 
     public function findUserByEmail(string $email): User;
+
+    public function findUserByShareToken(string $shareToken): User;
 }
