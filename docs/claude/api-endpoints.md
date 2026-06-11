@@ -13,12 +13,14 @@ Base URL: `/api`
 | GET | /api/doc | Swagger UI |
 | GET | /api/doc.json | OpenAPI spec |
 | GET | /api/profiles/{uuid} | Public profile + collection (opt-in, 404 if not public) |
+| GET | /api/shared/{token} | Shared collection by share token (works even if profile is private) |
 
 ## Users (IS_AUTHENTICATED_FULLY)
 
 | Method | Path | Description | Role |
 |--------|------|-------------|------|
 | GET | /api/users/me | Current user profile | USER |
+| POST | /api/users/me/share-link | Generate collection share link (idempotent) | USER |
 | POST | /api/users | Create user | ADMIN |
 | GET | /api/users/{uuid} | Get user | USER |
 | PUT | /api/users/{uuid} | Update user (`isPublic` toggle exempt from currentPassword gate) | USER |

@@ -12,6 +12,7 @@ final class User
         private string $password,
         private array $roles = [],
         private bool $isPublic = false,
+        private ?string $shareToken = null,
     ) {
     }
 
@@ -47,6 +48,23 @@ final class User
     public function isPublic(): bool
     {
         return $this->isPublic;
+    }
+
+    public function getShareToken(): ?string
+    {
+        return $this->shareToken;
+    }
+
+    /**
+     * Generates a share token if the user does not have one yet (idempotent).
+     */
+    public function ensureShareToken(): string
+    {
+        if (null === $this->shareToken) {
+            $this->shareToken = bin2hex(random_bytes(16));
+        }
+
+        return $this->shareToken;
     }
 
     public function setPassword(string $password): void

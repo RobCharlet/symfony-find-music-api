@@ -5,6 +5,7 @@ namespace App\User\UI\Controller;
 use App\Shared\UI\Controller\UserAuthorizationTrait;
 use App\User\App\Command\CreateUserCommand;
 use App\User\App\Command\DeleteUserCommand;
+use App\User\App\Command\GenerateShareLinkCommand;
 use App\User\App\Command\UpdateUserCommand;
 use App\User\App\Query\FindUserQuery;
 use App\User\Infra\Security\SecurityUser;
@@ -41,6 +42,39 @@ class UserController extends AbstractController
         $user = $securityUser->toDomain();
 
         return $this->json($normalizer->normalize($user), Response::HTTP_OK);
+    }
+
+    #[Route('/me/share-link', name: 'user_share_link_generate', methods: ['POST'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns the share token and the public share URL (idempotent).',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'token', type: 'string'),
+                new OA\Property(property: 'url', type: 'string'),
+            ]
+        )
+    )]
+    #[OA\Response(ref: '#/components/responses/Unauthorized', response: 401)]
+    public function generateShareLink(
+        MessageBusInterface $commandBus,
+    ): JsonResponse {
+        $userAuthorization = $this->getUserAuthorization();
+
+        $command = GenerateShareLinkCommand::forUser($userAuthorization->userUuid);
+
+        $token = $commandBus
+            ->dispatch($command)
+            ->last(HandledStamp::class)
+            ->getResult();
+
+        return $this->json(
+            [
+                'token' => $token,
+                'url' => $this->generateUrl('shared_collection_find', ['token' => $token]),
+            ],
+            Response::HTTP_OK
+        );
     }
 
     #[Route('', name: 'user_create', methods: ['POST'])]

@@ -65,6 +65,7 @@ security:
         - { path: ^/api/doc, roles: PUBLIC_ACCESS } # Swagger UI — endpoints are individually protected
         - { path: ^/api/health, roles: PUBLIC_ACCESS }
         - { path: ^/api/profiles(?:/|$), roles: PUBLIC_ACCESS } # Public opt-in profiles (FEAT-P15)
+        - { path: ^/api/shared/, roles: PUBLIC_ACCESS } # Collection share links (FEAT-P19)
 
         # Admin-only endpoints
         - { path: ^/api/users$, roles: ROLE_ADMIN, methods: [POST] }
