@@ -35,8 +35,8 @@ readonly class FollowReader implements FollowReaderInterface
         $query = $this->entityManager
             ->createQueryBuilder()
             ->select('u.uuid AS uuid', 'u.isPublic AS isPublic', 'f.createdAt AS followedAt')
-            ->from(Follow::class, 'f')
-            ->join(SecurityUser::class, 'u', Join::WITH, 'u.uuid = f.followedUuid')
+            ->from(SecurityUser::class, 'u')
+            ->join(Follow::class, 'f', Join::WITH, 'f.followedUuid = u.uuid')
             ->where('f.followerUuid = :uuid')
             ->setParameter('uuid', $followerUuid)
             ->orderBy('f.createdAt', 'DESC')
@@ -51,8 +51,8 @@ readonly class FollowReader implements FollowReaderInterface
         $query = $this->entityManager
             ->createQueryBuilder()
             ->select('u.uuid AS uuid', 'u.isPublic AS isPublic', 'f.createdAt AS followedAt')
-            ->from(Follow::class, 'f')
-            ->join(SecurityUser::class, 'u', Join::WITH, 'u.uuid = f.followerUuid')
+            ->from(SecurityUser::class, 'u')
+            ->join(Follow::class, 'f', Join::WITH, 'f.followerUuid = u.uuid')
             ->where('f.followedUuid = :uuid')
             ->setParameter('uuid', $followedUuid)
             ->orderBy('f.createdAt', 'DESC')
@@ -64,7 +64,9 @@ readonly class FollowReader implements FollowReaderInterface
 
     private function paginate(Query $query, int $page, int $limit): PaginatorInterface
     {
-        $paginator = new Paginator(new QueryAdapter($query));
+        // Scalar-only selects are incompatible with the Doctrine Paginator output
+        // walkers, so pagination falls back to plain limit/offset + CountWalker.
+        $paginator = new Paginator(new QueryAdapter($query, false, false));
         $paginator->setAllowOutOfRangePages(true);
         $paginator->setMaxPerPage($limit);
         $paginator->setCurrentPage($page);

@@ -2,6 +2,7 @@
 
 namespace App\User\UI\EventListener;
 
+use App\User\Domain\Exception\CannotFollowSelfException;
 use App\User\Domain\Exception\InvalidCurrentPasswordException;
 use App\User\Domain\Exception\InvalidDiscogsAccessTokenException;
 use App\User\Domain\Exception\MissingDiscogsCredentialsException;
@@ -84,6 +85,16 @@ final class ExceptionListener
                         'detail' => 'Discogs credentials could not be processed.',
                     ],
                     Response::HTTP_FORBIDDEN,
+                    ['Content-Type' => 'application/problem+json']
+                ),
+                $nested instanceof CannotFollowSelfException => new JsonResponse(
+                    [
+                        'type' => 'cannot_follow_self',
+                        'title' => 'Cannot Follow Self',
+                        'status' => Response::HTTP_BAD_REQUEST,
+                        'detail' => 'A user cannot follow themselves.',
+                    ],
+                    Response::HTTP_BAD_REQUEST,
                     ['Content-Type' => 'application/problem+json']
                 ),
                 $nested instanceof InvalidDiscogsAccessTokenException => new JsonResponse(

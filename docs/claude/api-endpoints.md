@@ -21,6 +21,10 @@ Base URL: `/api`
 |--------|------|-------------|------|
 | GET | /api/users/me | Current user profile | USER |
 | POST | /api/users/me/share-link | Generate collection share link (idempotent) | USER |
+| GET | /api/users/me/following | Paginated list of followed users | USER |
+| GET | /api/users/me/followers | Paginated list of followers | USER |
+| POST | /api/users/{uuid}/follow | Follow a public user (idempotent, 400 self, 404 private/missing) | USER |
+| DELETE | /api/users/{uuid}/follow | Unfollow a user (idempotent) | USER |
 | POST | /api/users | Create user | ADMIN |
 | GET | /api/users/{uuid} | Get user | USER |
 | PUT | /api/users/{uuid} | Update user (`isPublic` toggle exempt from currentPassword gate) | USER |
