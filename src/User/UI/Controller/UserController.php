@@ -121,6 +121,7 @@ class UserController extends AbstractController
                 new OA\Property(property: 'email', type: 'string', nullable: true),
                 new OA\Property(property: 'password', type: 'string', nullable: true),
                 new OA\Property(property: 'roles', type: 'array', items: new OA\Items(type: 'string'), nullable: true),
+                new OA\Property(property: 'isPublic', type: 'boolean', nullable: true),
             ]
         )
     )]
@@ -146,7 +147,8 @@ class UserController extends AbstractController
             $payload['password'] ?? null,
             $payload['currentPassword'] ?? null,
             $payload['roles'] ?? null,
-            $userAuthorization->isAdmin
+            $userAuthorization->isAdmin,
+            $payload['isPublic'] ?? null
         );
 
         $commandBus->dispatch($command);

@@ -14,6 +14,7 @@ readonly class UpdateUserCommand
         public ?string $currentPassword,
         public mixed $roles,
         public bool $isAdmin,
+        public ?bool $isPublic = null,
     ) {
     }
 
@@ -25,6 +26,7 @@ readonly class UpdateUserCommand
         ?string $currentPassword = null,
         mixed $roles = [],
         bool $isAdmin = false,
+        ?bool $isPublic = null,
     ): self {
         return new self(
             uuid: $uuid,
@@ -33,7 +35,8 @@ readonly class UpdateUserCommand
             password: $password,
             currentPassword: $currentPassword,
             roles: $roles,
-            isAdmin: $isAdmin
+            isAdmin: $isAdmin,
+            isPublic: $isPublic
         );
     }
 }

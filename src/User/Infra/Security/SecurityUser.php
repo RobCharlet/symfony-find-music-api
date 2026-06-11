@@ -17,6 +17,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
         private array $roles = [],
         private ?string $discogsAccessToken = null,
         private ?string $discogsAccessTokenNonce = null,
+        private bool $isPublic = false,
     ) {
     }
 
@@ -27,6 +28,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
             $user->getEmail(),
             $user->getPassword(),
             $user->getRoles(),
+            isPublic: $user->isPublic(),
         );
     }
 
@@ -35,6 +37,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
         $this->email = $user->getEmail();
         $this->password = $user->getPassword();
         $this->roles = $user->getRoles();
+        $this->isPublic = $user->isPublic();
     }
 
     public function toDomain(): User
@@ -44,6 +47,7 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
             $this->email,
             $this->password,
             $this->roles,
+            $this->isPublic,
         );
     }
 
@@ -65,6 +69,11 @@ class SecurityUser implements UserInterface, PasswordAuthenticatedUserInterface,
     public function getUuid(): Uuid
     {
         return $this->uuid;
+    }
+
+    public function isPublic(): bool
+    {
+        return $this->isPublic;
     }
 
     public function clearDiscogsAccessToken(): void

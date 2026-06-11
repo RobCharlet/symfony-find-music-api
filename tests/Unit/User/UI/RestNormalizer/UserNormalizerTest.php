@@ -21,9 +21,11 @@ class UserNormalizerTest extends TestCase
 
         $this->assertArrayHasKey('uuid', $result);
         $this->assertArrayHasKey('email', $result);
+        $this->assertArrayHasKey('isPublic', $result);
         $this->assertArrayNotHasKey('password', $result);
         $this->assertArrayNotHasKey('roles', $result);
         $this->assertSame('john@example.com', $result['email']);
+        $this->assertFalse($result['isPublic']);
     }
 
     #[Test]

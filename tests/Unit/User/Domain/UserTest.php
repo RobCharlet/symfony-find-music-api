@@ -51,10 +51,32 @@ class UserTest extends TestCase
 
         $user = new User($uuid, 'old@example.com', 'hashed_pw', ['ROLE_USER']);
 
-        $user->update('new@example.com', ['ROLE_ADMIN']);
+        $user->update('new@example.com', ['ROLE_ADMIN'], false);
 
         $this->assertSame('hashed_pw', $user->getPassword());
         $this->assertSame('new@example.com', $user->getEmail());
+    }
+
+    #[Test]
+    public function userIsNotPublicByDefault(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+
+        $user = new User($uuid, 'john@example.com', 'hashed_password', ['ROLE_USER']);
+
+        $this->assertFalse($user->isPublic());
+    }
+
+    #[Test]
+    public function updateTogglesIsPublic(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+
+        $user = new User($uuid, 'john@example.com', 'hashed_pw', ['ROLE_USER']);
+
+        $user->update('john@example.com', ['ROLE_USER'], true);
+
+        $this->assertTrue($user->isPublic());
     }
 
     #[Test]
@@ -64,7 +86,7 @@ class UserTest extends TestCase
 
         $user = new User($uuid, 'a@b.com', 'old_pw', []);
 
-        $user->update('a@b.com', [], 'new_pw');
+        $user->update('a@b.com', [], false, 'new_pw');
 
         $this->assertSame('new_pw', $user->getPassword());
     }

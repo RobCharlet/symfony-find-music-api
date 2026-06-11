@@ -62,6 +62,7 @@ final class SecurityUserFactory extends PersistentObjectFactory
             $user->update(
                 $user->getEmail(),
                 $user->getRoles(),
+                $user->isPublic(),
                 $hashedPassword,
             );
             $securityUser->updateFromDomain($user);

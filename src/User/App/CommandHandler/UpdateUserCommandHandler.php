@@ -28,23 +28,35 @@ readonly class UpdateUserCommandHandler
 
         $user = $this->userReader->findUserByUuid($command->uuid);
 
+        $emailChanged = null !== $command->email && $command->email !== $user->getEmail();
+        $passwordChange = null !== $command->password;
+        $rolesChanged = null !== $command->roles && $command->roles !== $user->getRoles();
+
+        // currentPassword is only required for sensitive changes; toggling isPublic alone is ungated.
         if (
             !$command->isAdmin
+            && ($emailChanged || $passwordChange || $rolesChanged)
             && !$this->passwordHasher->verify($user, $command->currentPassword ?? '')) {
             throw new InvalidCurrentPasswordException();
         }
 
+        $email = $command->email ?? $user->getEmail();
+        $roles = null !== $command->roles ? $command->roles : $user->getRoles();
+        $isPublic = $command->isPublic ?? $user->isPublic();
+
         if (null === $command->password) {
             $user->update(
-                $command->email,
-                $command->roles,
+                $email,
+                $roles,
+                $isPublic,
             );
         } else {
             $hashedPassword = $this->passwordHasher->hash($user, $command->password);
 
             $user->update(
-                $command->email,
-                $command->roles,
+                $email,
+                $roles,
+                $isPublic,
                 $hashedPassword,
             );
         }

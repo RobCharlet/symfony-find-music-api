@@ -53,6 +53,73 @@ class UpdateUserCommandHandlerTest extends TestCase
     }
 
     #[Test]
+    public function togglingIsPublicAloneDoesNotRequireCurrentPassword(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+
+        $existingUser = new User($uuid, 'jane@example.com', 'hashed', ['ROLE_USER']);
+
+        $command = new UpdateUserCommand(
+            uuid: $uuid,
+            requesterUuid: $uuid,
+            email: 'jane@example.com',
+            password: null,
+            currentPassword: null,
+            roles: ['ROLE_USER'],
+            isAdmin: false,
+            isPublic: true,
+        );
+
+        $mockReader = $this->createMock(UserReaderInterface::class);
+        $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($existingUser);
+
+        $mockHasher = $this->createMock(PasswordHasherInterface::class);
+        $mockHasher->expects($this->never())->method('verify');
+        $mockHasher->expects($this->never())->method('hash');
+
+        $mockWriter = $this->createMock(UserWriterInterface::class);
+        $mockWriter->expects($this->once())->method('update')->willReturnCallback(function (User $user) {
+            $this->assertTrue($user->isPublic());
+            $this->assertSame('jane@example.com', $user->getEmail());
+        });
+
+        $handler = new UpdateUserCommandHandler($mockHasher, $mockReader, $mockWriter);
+        $handler($command);
+    }
+
+    #[Test]
+    public function changingEmailWhileTogglingIsPublicStillRequiresCurrentPassword(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+
+        $existingUser = new User($uuid, 'jane@example.com', 'hashed', ['ROLE_USER']);
+
+        $command = new UpdateUserCommand(
+            uuid: $uuid,
+            requesterUuid: $uuid,
+            email: 'new@example.com',
+            password: null,
+            currentPassword: null,
+            roles: ['ROLE_USER'],
+            isAdmin: false,
+            isPublic: true,
+        );
+
+        $mockReader = $this->createMock(UserReaderInterface::class);
+        $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($existingUser);
+
+        $mockHasher = $this->createMock(PasswordHasherInterface::class);
+        $mockHasher->expects($this->once())->method('verify')->willReturn(false);
+
+        $mockWriter = $this->createStub(UserWriterInterface::class);
+
+        $this->expectException(InvalidCurrentPasswordException::class);
+
+        $handler = new UpdateUserCommandHandler($mockHasher, $mockReader, $mockWriter);
+        $handler($command);
+    }
+
+    #[Test]
     public function nonAdminCannotUpdateAnotherUser(): void
     {
         $uuid      = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
