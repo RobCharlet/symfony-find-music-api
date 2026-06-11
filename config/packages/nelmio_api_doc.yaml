@@ -158,6 +158,8 @@ nelmio_api_doc:
                                 type: string
                 NoContent:
                     description: Resource updated/deleted
+                BadRequest:
+                    description: Bad request
                 Unauthorized:
                     description: Unauthorized
                 Forbidden:
