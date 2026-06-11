@@ -28,9 +28,16 @@ class ProfileControllerTest extends WebTestCase
             'ownerUuid' => $uuid,
             'title'     => 'Kind of Blue',
             'artist'    => 'Miles Davis',
+            'rating'    => 5,
+            'personalNote' => 'Private listening note',
+        ]);
+        AlbumFactory::createOne([
+            'ownerUuid' => $uuid,
+            'title'     => 'Bitches Brew',
+            'artist'    => 'Miles Davis',
         ]);
 
-        $client->request('GET', '/api/profiles/'.$uuid->toRfc4122());
+        $client->request('GET', '/api/profiles/'.$uuid->toRfc4122().'?limit=1');
 
         $this->assertResponseStatusCodeSame(200);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
@@ -39,8 +46,13 @@ class ProfileControllerTest extends WebTestCase
         $this->assertSame($uuid->toRfc4122(), $data['profile']['uuid']);
         $this->assertTrue($data['profile']['isPublic']);
         $this->assertArrayNotHasKey('email', $data['profile']);
-        $this->assertSame('Kind of Blue', $data['collection']['data'][0]['title']);
+        $this->assertCount(1, $data['collection']['data']);
         $this->assertSame('Miles Davis', $data['collection']['data'][0]['artist']);
+        $this->assertArrayNotHasKey('ownerUuid', $data['collection']['data'][0]);
+        $this->assertArrayNotHasKey('rating', $data['collection']['data'][0]);
+        $this->assertArrayNotHasKey('personalNote', $data['collection']['data'][0]);
+        $this->assertSame(1, $data['collection']['pagination']['maxPerPage']);
+        $this->assertSame(2, $data['collection']['pagination']['totalItems']);
     }
 
     #[Test]
@@ -82,10 +94,10 @@ class ProfileControllerTest extends WebTestCase
         $token      = $jwtManager->create($user);
         $client->setServerParameter('HTTP_AUTHORIZATION', sprintf('Bearer %s', $token));
 
-        $client->request('PUT', '/api/users/'.$uuid->toRfc4122(), content: json_encode([
+        $client->jsonRequest('PUT', '/api/users/'.$uuid->toRfc4122(), [
             'email'    => 'toggle@example.com',
             'isPublic' => true,
-        ]));
+        ]);
 
         $this->assertResponseStatusCodeSame(204);
 

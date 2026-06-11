@@ -3,6 +3,7 @@
 namespace App\Collection\App\QueryHandler;
 
 use App\Collection\App\Query\FindPublicCollectionByOwnerQuery;
+use App\Collection\Domain\PaginatorInterface;
 use App\Collection\Domain\Repository\AlbumReaderInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -14,11 +15,22 @@ final readonly class FindPublicCollectionByOwnerQueryHandler
     ) {
     }
 
-    /**
-     * Ungated read: profile visibility is enforced upstream by the public profile use case.
-     */
-    public function __invoke(FindPublicCollectionByOwnerQuery $query): iterable
+    public function __invoke(FindPublicCollectionByOwnerQuery $query): PaginatorInterface
     {
-        return $this->albumReader->findAllByOwnerUuid($query->ownerUuid);
+        return $this->albumReader->findAllByOwnerUuidWithPagination(
+            $query->ownerUuid,
+            $query->page,
+            $query->limit,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        );
     }
 }
