@@ -1,0 +1,6 @@
+# Test-only service overrides (loaded automatically by MicroKernelTrait in APP_ENV=test).
+services:
+    App\Tests\Fake\FakeDiscogsApiClient: ~
+
+    # Keep the integration suite hermetic: never hit api.discogs.com in tests.
+    App\Collection\Domain\Repository\DiscogsApiClientInterface: '@App\Tests\Fake\FakeDiscogsApiClient'
