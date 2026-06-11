@@ -29,10 +29,7 @@ readonly class GenerateShareLinkCommandHandler
             return $existingToken;
         }
 
-        $token = $user->ensureShareToken();
-
-        $this->userWriter->update($user);
-
-        return $token;
+        // Atomic claim: under concurrent calls the first writer wins and all callers get its token.
+        return $this->userWriter->claimShareToken($command->userUuid, $user->ensureShareToken());
     }
 }

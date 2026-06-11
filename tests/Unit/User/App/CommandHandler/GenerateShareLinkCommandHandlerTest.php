@@ -24,13 +24,36 @@ class GenerateShareLinkCommandHandlerTest extends TestCase
         $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($user);
 
         $mockWriter = $this->createMock(UserWriterInterface::class);
-        $mockWriter->expects($this->once())->method('update')->with($user);
+        $mockWriter->expects($this->once())
+            ->method('claimShareToken')
+            ->with($uuid, $this->matchesRegularExpression('/^[0-9a-f]{32}$/'))
+            ->willReturnArgument(1);
 
         $handler = new GenerateShareLinkCommandHandler($mockReader, $mockWriter);
         $token = $handler(GenerateShareLinkCommand::forUser($uuid));
 
         $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $token);
         $this->assertSame($token, $user->getShareToken());
+    }
+
+    #[Test]
+    public function concurrentLoserReceivesWinnersToken(): void
+    {
+        $uuid = UuidV7::fromString('019c2e97-4f81-75c5-8eca-ec2ff86f7d56');
+        $winnerToken = 'b4dc0de4217a9b3d2e8f6041c2b7d9a3';
+        $user = new User($uuid, 'miles@example.com', 'hashed', ['ROLE_USER']);
+
+        $mockReader = $this->createMock(UserReaderInterface::class);
+        $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($user);
+
+        // Another request claimed a token between the read and the write: the DB value wins.
+        $mockWriter = $this->createMock(UserWriterInterface::class);
+        $mockWriter->expects($this->once())->method('claimShareToken')->willReturn($winnerToken);
+
+        $handler = new GenerateShareLinkCommandHandler($mockReader, $mockWriter);
+        $token = $handler(GenerateShareLinkCommand::forUser($uuid));
+
+        $this->assertSame($winnerToken, $token);
     }
 
     #[Test]
@@ -44,7 +67,7 @@ class GenerateShareLinkCommandHandlerTest extends TestCase
         $mockReader->expects($this->once())->method('findUserByUuid')->with($uuid)->willReturn($user);
 
         $mockWriter = $this->createMock(UserWriterInterface::class);
-        $mockWriter->expects($this->never())->method('update');
+        $mockWriter->expects($this->never())->method('claimShareToken');
 
         $handler = new GenerateShareLinkCommandHandler($mockReader, $mockWriter);
         $token = $handler(GenerateShareLinkCommand::forUser($uuid));
@@ -61,7 +84,7 @@ class GenerateShareLinkCommandHandlerTest extends TestCase
         $mockReader->expects($this->once())->method('findUserByUuid')->willThrowException(new UserNotFoundException());
 
         $mockWriter = $this->createMock(UserWriterInterface::class);
-        $mockWriter->expects($this->never())->method('update');
+        $mockWriter->expects($this->never())->method('claimShareToken');
 
         $this->expectException(UserNotFoundException::class);
 
