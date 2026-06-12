@@ -20,7 +20,7 @@ class AdminControllerTest extends ControllerTestCase
         $this->assertResponseStatusCodeSame(200);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertArrayHasKey('data', $data);
         $this->assertArrayHasKey('pagination', $data);
@@ -42,7 +42,7 @@ class AdminControllerTest extends ControllerTestCase
         $this->assertResponseStatusCodeSame(200);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
         $this->assertSame(1, $data['pagination']['currentPage']);
         $this->assertSame(50, $data['pagination']['maxPerPage']);
     }
@@ -109,7 +109,7 @@ class AdminControllerTest extends ControllerTestCase
         $this->assertResponseStatusCodeSame(200);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertArrayHasKey('data', $data);
         $this->assertArrayHasKey('pagination', $data);
@@ -130,7 +130,7 @@ class AdminControllerTest extends ControllerTestCase
 
         $this->assertResponseStatusCodeSame(200);
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
         $this->assertSame(1, $data['pagination']['currentPage']);
         $this->assertSame(50, $data['pagination']['maxPerPage']);
     }
