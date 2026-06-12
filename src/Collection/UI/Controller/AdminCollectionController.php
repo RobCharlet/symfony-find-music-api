@@ -3,18 +3,19 @@
 namespace App\Collection\UI\Controller;
 
 use App\Collection\App\Query\FindCollectionQuery;
-use App\Collection\UI\RestNormalizer\AlbumNormalizer;
-use App\Shared\App\DTO\PaginationDTO;
+use App\Collection\UI\ReadModel\AlbumListView;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\JsonStreamer\StreamWriterInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\TypeInfo\Type;
 
 #[Route('/api/admin')]
 #[IsGranted('ROLE_ADMIN')]
@@ -27,28 +28,26 @@ class AdminCollectionController extends AbstractController
     #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
     #[Security(name: 'Bearer')]
     public function findCollections(
-        AlbumNormalizer $normalizer,
+        StreamWriterInterface $jsonStreamWriter,
         MessageBusInterface $queryBus,
         #[MapQueryParameter] int $page = 1,
         #[MapQueryParameter] int $limit = 50,
-    ): JsonResponse {
+    ): StreamedResponse {
         $query = FindCollectionQuery::withPageAndLimit($page, $limit);
         $envelope = $queryBus->dispatch($query);
 
         $paginator = $envelope->last(HandledStamp::class)->getResult();
 
-        $albums = [];
+        $view = AlbumListView::fromPaginator($paginator);
 
-        foreach ($paginator as $album) {
-            $albums[] = $normalizer->normalize($album);
-        }
-
-        return new JsonResponse(
-            [
-                'data' => $albums,
-                'pagination' => PaginationDTO::fromPaginator($paginator),
-            ],
-            Response::HTTP_OK
+        return new StreamedResponse(
+            function () use ($jsonStreamWriter, $view): void {
+                foreach ($jsonStreamWriter->write($view, Type::object(AlbumListView::class), ['include_null_properties' => true]) as $chunk) {
+                    echo $chunk;
+                }
+            },
+            Response::HTTP_OK,
+            ['Content-Type' => 'application/json']
         );
     }
 }

@@ -13,7 +13,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid());
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
         $data = $paginator['data'];
         $pagination = $paginator['pagination'];
 
@@ -35,6 +35,29 @@ class CollectionControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function retrieveAlbumsByOwnerUuidKeepsNullablePropertiesInPayload()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, [
+            'title' => 'Untrue',
+            'artist' => 'Burial',
+            'genre' => null,
+            'releaseYear' => null,
+            'label' => null,
+            'coverUrl' => null,
+        ]);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid());
+        $album = json_decode($client->getInternalResponse()->getContent(), true)['data'][0];
+
+        $this->assertResponseIsSuccessful();
+        foreach (['genre', 'releaseYear', 'label', 'coverUrl', 'rating', 'personalNote'] as $key) {
+            $this->assertArrayHasKey($key, $album);
+            $this->assertNull($album[$key]);
+        }
+    }
+
+    #[Test]
     public function retrieveAlbumsByOwnerUuidSortedByTitleAsc()
     {
         [$client, $user] = $this->createAuthenticatedClientWithUser();
@@ -42,7 +65,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?sort_by=title&sort_order=ASC');
-        $data = json_decode($client->getResponse()->getContent(), true)['data'];
+        $data = json_decode($client->getInternalResponse()->getContent(), true)['data'];
 
         $this->assertResponseIsSuccessful();
         $this->assertSame('Animal Magic', $data[0]['title']);
@@ -57,7 +80,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Selected Ambient Works', 'artist' => 'Aphex Twin', 'genre' => 'Electronic']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?genre=Electronic');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -73,7 +96,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?page=2&limit=1');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(2, $paginator['pagination']['currentPage']);
@@ -93,7 +116,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Animal Magic', 'artist' => 'Bonobo']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?sort_by=title&sort_order=DESC');
-        $data = json_decode($client->getResponse()->getContent(), true)['data'];
+        $data = json_decode($client->getInternalResponse()->getContent(), true)['data'];
 
         $this->assertResponseIsSuccessful();
         $this->assertSame('Mezzanine', $data[0]['title']);
@@ -306,7 +329,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack', 'label' => 'Virgin']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=coltrane');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -320,7 +343,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=coltrane');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(0, $paginator['pagination']['totalItems']);
@@ -365,7 +388,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Kind of Blue', 'artist' => 'Miles Davis', 'label' => 'Columbia']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=columbia');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -380,7 +403,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?artist=Bonobo');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -395,7 +418,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Third', 'artist' => 'Portishead', 'format' => 'Vinyle']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?format=CD');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -410,7 +433,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo', 'label' => 'Ninja Tune']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?label=Warp');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -425,7 +448,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo', 'releaseYear' => 2010]);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?year_from=2005');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -440,7 +463,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo', 'releaseYear' => 2010]);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?year_to=2005');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -456,7 +479,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Tomorrow\'s Harvest', 'artist' => 'Boards of Canada', 'releaseYear' => 2013]);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?year_from=2000&year_to=2010');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -472,7 +495,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Mezzanine', 'artist' => 'Massive Attack', 'genre' => 'Trip Hop']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?artist=Bonobo&genre=Downtempo');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -488,7 +511,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'A Love Supreme', 'artist' => 'John Coltrane', 'label' => 'Impulse!']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?search=blue&artist=John Coltrane');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(1, $paginator['pagination']['totalItems']);
@@ -502,7 +525,7 @@ class CollectionControllerTest extends ControllerTestCase
         $this->createAlbumOwnedBy($user, ['title' => 'Black Sands', 'artist' => 'Bonobo']);
 
         $client->request('GET', '/api/collections/owner/'.$user->getUuid().'?artist=Radiohead');
-        $paginator = json_decode($client->getResponse()->getContent(), true);
+        $paginator = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(0, $paginator['pagination']['totalItems']);

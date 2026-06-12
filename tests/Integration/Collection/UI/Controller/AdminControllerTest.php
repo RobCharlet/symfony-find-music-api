@@ -20,7 +20,7 @@ class AdminControllerTest extends ControllerTestCase
         $this->assertResponseStatusCodeSame(200);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertArrayHasKey('data', $data);
         $this->assertArrayHasKey('pagination', $data);
@@ -42,7 +42,7 @@ class AdminControllerTest extends ControllerTestCase
         $this->assertResponseStatusCodeSame(200);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
         $this->assertSame(1, $data['pagination']['currentPage']);
         $this->assertSame(50, $data['pagination']['maxPerPage']);
     }
@@ -109,7 +109,7 @@ class AdminControllerTest extends ControllerTestCase
         $this->assertResponseStatusCodeSame(200);
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
 
         $this->assertArrayHasKey('data', $data);
         $this->assertArrayHasKey('pagination', $data);
@@ -118,6 +118,25 @@ class AdminControllerTest extends ControllerTestCase
         $this->assertSame(2, $data['pagination']['maxPerPage']);
         $this->assertGreaterThanOrEqual(1, $data['pagination']['totalItems']);
         $this->assertFalse($data['pagination']['hasNextPage']);
+    }
+
+    #[Test]
+    public function adminExternalReferenceListIncludesNullMetadata()
+    {
+        [$client, $adminUser] = $this->createAuthenticatedClientWithUser(['ROLE_ADMIN']);
+
+        $this->createExternalReferencesWithAlbumOwnedByAndReturnExternalReferences($adminUser, []);
+
+        $client->request('GET', '/api/admin/external-references?page=1&limit=2');
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
+
+        $this->assertCount(1, $data['data']);
+        $item = $data['data'][0];
+        $this->assertArrayHasKey('metadata', $item);
+        $this->assertNull($item['metadata']);
     }
 
     #[Test]
@@ -130,7 +149,7 @@ class AdminControllerTest extends ControllerTestCase
 
         $this->assertResponseStatusCodeSame(200);
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
         $this->assertSame(1, $data['pagination']['currentPage']);
         $this->assertSame(50, $data['pagination']['maxPerPage']);
     }

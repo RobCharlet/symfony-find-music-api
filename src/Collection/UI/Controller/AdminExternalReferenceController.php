@@ -4,18 +4,19 @@ namespace App\Collection\UI\Controller;
 
 use App\Collection\App\Query\FindExternalReferencesQuery;
 use App\Collection\Domain\PaginatorInterface;
-use App\Collection\UI\RestNormalizer\ExternalReferenceNormalizer;
-use App\Shared\App\DTO\PaginationDTO;
+use App\Collection\UI\ReadModel\ExternalReferenceListView;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\JsonStreamer\StreamWriterInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\TypeInfo\Type;
 
 #[Route('/api/admin')]
 #[IsGranted('ROLE_ADMIN')]
@@ -33,29 +34,27 @@ class AdminExternalReferenceController extends AbstractController
     #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
     #[Security(name: 'Bearer')]
     public function findAll(
-        ExternalReferenceNormalizer $normalizer,
+        StreamWriterInterface $jsonStreamWriter,
         MessageBusInterface $queryBus,
         #[MapQueryParameter] int $page = 1,
         #[MapQueryParameter] int $limit = 50,
-    ): JsonResponse {
+    ): StreamedResponse {
         $query = FindExternalReferencesQuery::withPageAndLimit($page, $limit);
         $envelope = $queryBus->dispatch($query);
 
         /** @var PaginatorInterface $paginator */
         $paginator = $envelope->last(HandledStamp::class)->getResult();
 
-        $externalReferences = [];
+        $view = ExternalReferenceListView::fromPaginator($paginator);
 
-        foreach ($paginator as $externalReference) {
-            $externalReferences[] = $normalizer->normalize($externalReference);
-        }
-
-        return new JsonResponse(
-            [
-                'data' => $externalReferences,
-                'pagination' => PaginationDTO::fromPaginator($paginator),
-            ],
-            Response::HTTP_OK
+        return new StreamedResponse(
+            function () use ($jsonStreamWriter, $view): void {
+                foreach ($jsonStreamWriter->write($view, Type::object(ExternalReferenceListView::class), ['include_null_properties' => true]) as $chunk) {
+                    echo $chunk;
+                }
+            },
+            Response::HTTP_OK,
+            ['Content-Type' => 'application/json']
         );
     }
 }

@@ -9,6 +9,7 @@
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-sodium": "*",
         "babdev/pagerfanta-bundle": "^4.6",
         "doctrine/doctrine-bundle": "^3.2",
         "doctrine/doctrine-migrations-bundle": "^4.0",
@@ -26,6 +27,7 @@
         "symfony/flex": "^2.11",
         "symfony/framework-bundle": "8.0.*",
         "symfony/http-client": "8.0.*",
+        "symfony/json-streamer": "8.0.*",
         "symfony/messenger": "8.0.*",
         "symfony/mime": "8.0.*",
         "symfony/monolog-bundle": "^4.0.2",
@@ -40,8 +42,7 @@
         "symfony/validator": "8.0.*",
         "symfony/yaml": "8.0.*",
         "twig/extra-bundle": "^2.12|^3.24",
-        "twig/twig": "^2.12|^3.27.1",
-        "ext-sodium": "*"
+        "twig/twig": "^2.12|^3.27.1"
     },
     "config": {
         "allow-plugins": {
