@@ -121,6 +121,25 @@ class AdminControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function adminExternalReferenceListIncludesNullMetadata()
+    {
+        [$client, $adminUser] = $this->createAuthenticatedClientWithUser(['ROLE_ADMIN']);
+
+        $this->createExternalReferencesWithAlbumOwnedByAndReturnExternalReferences($adminUser, []);
+
+        $client->request('GET', '/api/admin/external-references?page=1&limit=2');
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $data = json_decode($client->getInternalResponse()->getContent(), true);
+
+        $this->assertCount(1, $data['data']);
+        $item = $data['data'][0];
+        $this->assertArrayHasKey('metadata', $item);
+        $this->assertNull($item['metadata']);
+    }
+
+    #[Test]
     public function adminCanListExternalReferenceWithoutPaginationParams()
     {
         [$client, $adminUser] = $this->createAuthenticatedClientWithUser(['ROLE_ADMIN']);
