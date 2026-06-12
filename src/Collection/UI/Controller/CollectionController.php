@@ -8,8 +8,7 @@ use App\Collection\App\Query\FindCollectionByOwnerQuery;
 use App\Collection\App\Query\GetStatsByOwnerQuery;
 use App\Collection\UI\Exception\InvalidExportFormatException;
 use App\Collection\UI\Exporter\CsvCollectionExporter;
-use App\Collection\UI\RestNormalizer\AlbumNormalizer;
-use App\Shared\App\DTO\PaginationDTO;
+use App\Collection\UI\ReadModel\AlbumListView;
 use App\Shared\UI\Controller\UserAuthorizationTrait;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
@@ -20,9 +19,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedJsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\JsonStreamer\StreamWriterInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\Uid\Uuid;
 
 #[Route('/api/collections')]
@@ -90,11 +91,11 @@ class CollectionController extends AbstractController
     #[OA\Response(ref: '#/components/responses/Forbidden', response: 403)]
     #[Security(name: 'Bearer')]
     public function findByOwner(
-        AlbumNormalizer $normalizer,
+        StreamWriterInterface $jsonStreamWriter,
         MessageBusInterface $queryBus,
         Uuid $ownerUuid,
         #[MapQueryString] CollectionFilters $filters,
-    ): JsonResponse {
+    ): StreamedResponse {
         $userAuthorization = $this->getUserAuthorization();
 
         $query = FindAlbumsByOwnerWithPaginationQuery::withOwnerUuid(
@@ -118,18 +119,16 @@ class CollectionController extends AbstractController
         $envelope = $queryBus->dispatch($query);
         $paginator = $envelope->last(HandledStamp::class)->getResult();
 
-        $albums = [];
+        $view = AlbumListView::fromPaginator($paginator);
 
-        foreach ($paginator as $album) {
-            $albums[] = $normalizer->normalize($album);
-        }
-
-        return new JsonResponse(
-            [
-                'data' => $albums,
-                'pagination' => PaginationDTO::fromPaginator($paginator),
-            ],
-            Response::HTTP_OK
+        return new StreamedResponse(
+            function () use ($jsonStreamWriter, $view): void {
+                foreach ($jsonStreamWriter->write($view, Type::object(AlbumListView::class)) as $chunk) {
+                    echo $chunk;
+                }
+            },
+            Response::HTTP_OK,
+            ['Content-Type' => 'application/json']
         );
     }
 
