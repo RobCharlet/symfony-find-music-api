@@ -49,7 +49,7 @@ class AdminExternalReferenceController extends AbstractController
 
         return new StreamedResponse(
             function () use ($jsonStreamWriter, $view): void {
-                foreach ($jsonStreamWriter->write($view, Type::object(ExternalReferenceListView::class)) as $chunk) {
+                foreach ($jsonStreamWriter->write($view, Type::object(ExternalReferenceListView::class), ['include_null_properties' => true]) as $chunk) {
                     echo $chunk;
                 }
             },

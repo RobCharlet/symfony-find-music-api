@@ -35,6 +35,29 @@ class CollectionControllerTest extends ControllerTestCase
     }
 
     #[Test]
+    public function retrieveAlbumsByOwnerUuidKeepsNullablePropertiesInPayload()
+    {
+        [$client, $user] = $this->createAuthenticatedClientWithUser();
+        $this->createAlbumOwnedBy($user, [
+            'title' => 'Untrue',
+            'artist' => 'Burial',
+            'genre' => null,
+            'releaseYear' => null,
+            'label' => null,
+            'coverUrl' => null,
+        ]);
+
+        $client->request('GET', '/api/collections/owner/'.$user->getUuid());
+        $album = json_decode($client->getInternalResponse()->getContent(), true)['data'][0];
+
+        $this->assertResponseIsSuccessful();
+        foreach (['genre', 'releaseYear', 'label', 'coverUrl', 'rating', 'personalNote'] as $key) {
+            $this->assertArrayHasKey($key, $album);
+            $this->assertNull($album[$key]);
+        }
+    }
+
+    #[Test]
     public function retrieveAlbumsByOwnerUuidSortedByTitleAsc()
     {
         [$client, $user] = $this->createAuthenticatedClientWithUser();

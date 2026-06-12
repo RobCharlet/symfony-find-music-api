@@ -42,7 +42,7 @@ class AdminCollectionController extends AbstractController
 
         return new StreamedResponse(
             function () use ($jsonStreamWriter, $view): void {
-                foreach ($jsonStreamWriter->write($view, Type::object(AlbumListView::class)) as $chunk) {
+                foreach ($jsonStreamWriter->write($view, Type::object(AlbumListView::class), ['include_null_properties' => true]) as $chunk) {
                     echo $chunk;
                 }
             },
